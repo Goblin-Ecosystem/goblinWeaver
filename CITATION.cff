@@ -1,0 +1,17 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+authors:
+- family-names: "Jaime"
+  given-names: "Damien"
+  orcid: "https://orcid.org/0000-0002-7503-4606"
+- family-names: "El Haddad"
+  given-names: "Joyce"
+  orcid: "https://orcid.org/0000-0002-2709-2430"
+- family-names: "Poizat"
+  given-names: "Pascal"
+  orcid: "https://orcid.org/0000-0001-7979-9510"
+title: "Goblin-Weaver"
+version: 1.0.0
+doi: 10.5281/zenodo.10291589
+date-released: 2023-12-07
+url: "https://github.com/Goblin-Ecosystem/goblinWeaver"
