@@ -1,5 +1,6 @@
 package com.cifre.sap.su.neo4jEcosystemWeaver.utils;
 
+import com.cifre.sap.su.neo4jEcosystemWeaver.weaver.addedValue.AddedValueEnum;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -10,6 +11,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
@@ -37,6 +39,7 @@ public class OsvProceeding {
         createAggregateDataFile();
         try {
             OsvDataSingleton.getDataJsonObject();
+            GraphUtils.removeAddedValuesOnGraph(Set.of(AddedValueEnum.CVE, AddedValueEnum.CVE_AGGREGATED));
         } catch (IOException | ParseException e) {
             e.printStackTrace();
         }
