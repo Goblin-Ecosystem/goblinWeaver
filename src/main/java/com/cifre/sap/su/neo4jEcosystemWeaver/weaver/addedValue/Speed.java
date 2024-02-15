@@ -1,7 +1,7 @@
 package com.cifre.sap.su.neo4jEcosystemWeaver.weaver.addedValue;
 
 import com.cifre.sap.su.neo4jEcosystemWeaver.utils.GraphUtils;
-import com.cifre.sap.su.neo4jEcosystemWeaver.utils.Neo4jDriverSingleton;
+import com.cifre.sap.su.neo4jEcosystemWeaver.graphDatabase.neo4j.Neo4jDriverSingleton;
 import org.neo4j.driver.Driver;
 import org.neo4j.driver.Record;
 import org.neo4j.driver.Result;
@@ -25,19 +25,13 @@ public class Speed implements AddedValue<Double> {
         return AddedValueEnum.SPEED;
     }
 
-    @Override
-    public Pair<String, Object> getValue() {
-        return new Pair<>() {
-            @Override
-            public String key() {
-                return String.valueOf(getAddedValueEnum()).toLowerCase();
-            }
+    public String getNodeId(){
+        return ga;
+    }
 
-            @Override
-            public Double value() {
-                return value;
-            }
-        };
+    @Override
+    public Map<String, Object> getValue() {
+        return Collections.singletonMap(getAddedValueEnum().getJsonKey(), value);
     }
 
     @Override
@@ -48,7 +42,7 @@ public class Speed implements AddedValue<Double> {
     @Override
     public void computeValue() {
         this.value = fillSpeed();
-        GraphUtils.putArtifactAddedValueOnGraph(ga, getAddedValueEnum(), valueToString(value));
+        //GraphUtils.putArtifactAddedValueOnGraph(ga, getAddedValueEnum(), valueToString());
     }
 
     @Override
@@ -57,7 +51,7 @@ public class Speed implements AddedValue<Double> {
     }
 
     @Override
-    public String valueToString(Double value) {
+    public String valueToString() {
         return String.valueOf(value);
     }
 

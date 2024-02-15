@@ -1,13 +1,14 @@
 package com.cifre.sap.su.neo4jEcosystemWeaver.weaver.addedValue;
 
 import com.cifre.sap.su.neo4jEcosystemWeaver.utils.GraphUtils;
-import com.cifre.sap.su.neo4jEcosystemWeaver.utils.Neo4jDriverSingleton;
+import com.cifre.sap.su.neo4jEcosystemWeaver.graphDatabase.neo4j.Neo4jDriverSingleton;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.neo4j.driver.*;
 import org.neo4j.driver.Record;
 import org.neo4j.driver.util.Pair;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -23,19 +24,13 @@ public class Freshness implements AddedValue<Map<String, String>>{
         return AddedValueEnum.FRESHNESS;
     }
 
-    @Override
-    public Pair<String, Object> getValue() {
-        return new Pair<>() {
-            @Override
-            public String key() {
-                return String.valueOf(getAddedValueEnum()).toLowerCase();
-            }
+    public String getNodeId(){
+        return gav;
+    }
 
-            @Override
-            public Map<String, String> value() {
-                return value;
-            }
-        };
+    @Override
+    public Map<String, Object> getValue() {
+        return Collections.singletonMap(getAddedValueEnum().getJsonKey(), value);
     }
 
     @Override
@@ -46,7 +41,7 @@ public class Freshness implements AddedValue<Map<String, String>>{
     @Override
     public void computeValue() {
         this.value = fillFreshness();
-        GraphUtils.putReleaseAddedValueOnGraph(gav, getAddedValueEnum(), valueToString(value));
+        //GraphUtils.putReleaseAddedValueOnGraph(gav, getAddedValueEnum(), valueToString());
     }
 
     private Map<String, String> fillFreshness() {
@@ -60,7 +55,7 @@ public class Freshness implements AddedValue<Map<String, String>>{
             JSONParser parser = new JSONParser();
             JSONObject jsonObject = (JSONObject) parser.parse(jsonString);
 
-            JSONObject freshnessJson = (JSONObject) jsonObject.get(String.valueOf(getAddedValueEnum()).toLowerCase());
+            JSONObject freshnessJson = (JSONObject) jsonObject.get(getAddedValueEnum().getJsonKey());
             resultMap.put("numberMissedRelease", (String) freshnessJson.get("numberMissedRelease"));
             resultMap.put("outdatedTimeInMs", (String) freshnessJson.get("outdatedTimeInMs"));
         } catch (Exception e) {
@@ -70,11 +65,11 @@ public class Freshness implements AddedValue<Map<String, String>>{
     }
 
     @Override
-    public String valueToString(Map<String, String> freshnessMap){
+    public String valueToString(){
         JSONObject jsonObject = new JSONObject();
-        jsonObject.putAll(freshnessMap);
+        jsonObject.putAll(value);
         JSONObject finalObject = new JSONObject();
-        finalObject.put(String.valueOf(getAddedValueEnum()).toLowerCase(), freshnessMap);
+        finalObject.put(getAddedValueEnum().getJsonKey(), value);
         return finalObject.toJSONString().replace("\"", "\\\"");
     }
 

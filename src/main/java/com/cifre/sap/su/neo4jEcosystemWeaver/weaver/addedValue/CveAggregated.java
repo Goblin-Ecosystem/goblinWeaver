@@ -1,7 +1,7 @@
 package com.cifre.sap.su.neo4jEcosystemWeaver.weaver.addedValue;
 
 import com.cifre.sap.su.neo4jEcosystemWeaver.utils.GraphUtils;
-import com.cifre.sap.su.neo4jEcosystemWeaver.utils.Neo4jDriverSingleton;
+import com.cifre.sap.su.neo4jEcosystemWeaver.graphDatabase.neo4j.Neo4jDriverSingleton;
 import com.cifre.sap.su.neo4jEcosystemWeaver.weaver.graphController.GetNodeWithAddedValues;
 import org.neo4j.driver.Driver;
 import org.neo4j.driver.Record;
@@ -22,6 +22,10 @@ public class CveAggregated extends Cve {
     @Override
     public AddedValueEnum getAddedValueEnum() {
         return AddedValueEnum.CVE_AGGREGATED;
+    }
+
+    public String getNodeId(){
+        return gav;
     }
 
     @Override
@@ -55,7 +59,7 @@ public class CveAggregated extends Cve {
                 }
             }
             //Add calculated value on graph and return
-            GraphUtils.putReleaseAddedValueOnGraph(gav, getAddedValueEnum(), valueToString(aggregatedCveValue));
+            GraphUtils.putReleaseAddedValueOnGraph(gav, getAddedValueEnum(), valueToString());
             return aggregatedCveValue;
         }
     }

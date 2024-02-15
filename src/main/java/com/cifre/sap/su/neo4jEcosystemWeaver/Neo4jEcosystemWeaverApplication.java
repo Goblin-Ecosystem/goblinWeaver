@@ -1,6 +1,6 @@
 package com.cifre.sap.su.neo4jEcosystemWeaver;
 
-import com.cifre.sap.su.neo4jEcosystemWeaver.utils.Neo4jDriverSingleton;
+import com.cifre.sap.su.neo4jEcosystemWeaver.graphDatabase.neo4j.Neo4jDriverSingleton;
 import com.cifre.sap.su.neo4jEcosystemWeaver.utils.OsvProceeding;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

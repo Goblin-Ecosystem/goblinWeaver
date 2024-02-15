@@ -1,7 +1,7 @@
 package com.cifre.sap.su.neo4jEcosystemWeaver.weaver.addedValue;
 
 import com.cifre.sap.su.neo4jEcosystemWeaver.utils.GraphUtils;
-import com.cifre.sap.su.neo4jEcosystemWeaver.utils.Neo4jDriverSingleton;
+import com.cifre.sap.su.neo4jEcosystemWeaver.graphDatabase.neo4j.Neo4jDriverSingleton;
 import com.cifre.sap.su.neo4jEcosystemWeaver.weaver.graphController.GetNodeWithAddedValues;
 import org.neo4j.driver.Driver;
 import org.neo4j.driver.Record;
@@ -19,6 +19,10 @@ public class FreshnessAggregated extends Freshness{
     @Override
     public AddedValueEnum getAddedValueEnum() {
         return AddedValueEnum.FRESHNESS_AGGREGATED;
+    }
+
+    public String getNodeId(){
+        return gav;
     }
 
     @Override
@@ -61,7 +65,7 @@ public class FreshnessAggregated extends Freshness{
             aggregatedFreshnessMap.put("numberMissedRelease", Integer.toString(totalNumberMissedRelease));
             aggregatedFreshnessMap.put("outdatedTimeInMs", Long.toString(totalOutdatedTimeInMs));
             //Add calculated value on graph and return
-            GraphUtils.putReleaseAddedValueOnGraph(gav, getAddedValueEnum(), valueToString(aggregatedFreshnessMap));
+            GraphUtils.putReleaseAddedValueOnGraph(gav, getAddedValueEnum(), valueToString());
             return aggregatedFreshnessMap;
         }
     }

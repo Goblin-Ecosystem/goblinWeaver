@@ -9,10 +9,7 @@ import org.json.simple.parser.ParseException;
 import org.neo4j.driver.util.Pair;
 
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 public class Cve implements AddedValue<Set<Map<String, String>>>{
     protected final String gav;
@@ -26,28 +23,22 @@ public class Cve implements AddedValue<Set<Map<String, String>>>{
         return AddedValueEnum.CVE;
     }
 
+    public String getNodeId(){
+        return gav;
+    }
+
     public void setValue(String value){
         this.value = this.stringToValue(value);
     }
 
     public void computeValue(){
         value = fillCve();
-        GraphUtils.putReleaseAddedValueOnGraph(gav, getAddedValueEnum(), valueToString(value));
+        //GraphUtils.putReleaseAddedValueOnGraph(gav, getAddedValueEnum(), valueToString());
     }
 
     @Override
-    public Pair<String, Object> getValue() {
-        return new Pair<>() {
-            @Override
-            public String key() {
-                return String.valueOf(getAddedValueEnum()).toLowerCase();
-            }
-
-            @Override
-            public Set<Map<String, String>> value() {
-                return value;
-            }
-        };
+    public Map<String, Object> getValue() {
+        return Collections.singletonMap(getAddedValueEnum().getJsonKey(), value);
     }
 
     @Override
@@ -57,7 +48,7 @@ public class Cve implements AddedValue<Set<Map<String, String>>>{
             JSONParser parser = new JSONParser();
             JSONObject jsonObject = (JSONObject) parser.parse(jsonString);
 
-            JSONArray cveArray = (JSONArray) jsonObject.get(String.valueOf(getAddedValueEnum()).toLowerCase());
+            JSONArray cveArray = (JSONArray) jsonObject.get(getAddedValueEnum().getJsonKey());
             if(cveArray != null) {
                 for (Object obj : cveArray) {
                     JSONObject cveJson = (JSONObject) obj;
@@ -78,7 +69,7 @@ public class Cve implements AddedValue<Set<Map<String, String>>>{
     }
 
     @Override
-    public String valueToString(Set<Map<String, String>> value){
+    public String valueToString(){
         JSONArray jsonArray = new JSONArray();
 
         for (Map<String, String> map : value) {
@@ -88,7 +79,7 @@ public class Cve implements AddedValue<Set<Map<String, String>>>{
         }
 
         JSONObject finalObject = new JSONObject();
-        finalObject.put(String.valueOf(getAddedValueEnum()).toLowerCase(), jsonArray);
+        finalObject.put(getAddedValueEnum().getJsonKey(), jsonArray);
 
         return finalObject.toJSONString().replace("\"", "\\\"");
     }

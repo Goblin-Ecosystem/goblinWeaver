@@ -1,5 +1,6 @@
 package com.cifre.sap.su.neo4jEcosystemWeaver.utils;
 
+import com.cifre.sap.su.neo4jEcosystemWeaver.graphDatabase.neo4j.Neo4jDriverSingleton;
 import com.cifre.sap.su.neo4jEcosystemWeaver.weaver.addedValue.AddedValueEnum;
 import org.neo4j.driver.*;
 import org.neo4j.driver.Record;

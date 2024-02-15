@@ -1,7 +1,7 @@
 package com.cifre.sap.su.neo4jEcosystemWeaver.api.controllers;
 
 import com.cifre.sap.su.neo4jEcosystemWeaver.api.entities.ArtifactQuery;
-import com.cifre.sap.su.neo4jEcosystemWeaver.utils.Neo4jDriverSingleton;
+import com.cifre.sap.su.neo4jEcosystemWeaver.graphDatabase.neo4j.Neo4jDriverSingleton;
 import com.cifre.sap.su.neo4jEcosystemWeaver.utils.Neo4jUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;

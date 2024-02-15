@@ -1,4 +1,4 @@
-package com.cifre.sap.su.neo4jEcosystemWeaver.utils;
+package com.cifre.sap.su.neo4jEcosystemWeaver.graphDatabase.neo4j;
 
 import org.neo4j.driver.AuthTokens;
 import org.neo4j.driver.Driver;
