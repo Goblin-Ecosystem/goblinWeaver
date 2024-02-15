@@ -1,7 +1,6 @@
 package com.cifre.sap.su.neo4jEcosystemWeaver.graphEntities.edges;
 
 import com.cifre.sap.su.neo4jEcosystemWeaver.graphEntities.GraphObject;
-import com.cifre.sap.su.neo4jEcosystemWeaver.weaver.addedValue.AddedValue;
 import org.json.simple.JSONObject;
 
 import java.util.Objects;

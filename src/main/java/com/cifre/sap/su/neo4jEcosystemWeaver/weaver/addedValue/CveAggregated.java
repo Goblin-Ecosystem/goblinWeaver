@@ -1,12 +1,9 @@
 package com.cifre.sap.su.neo4jEcosystemWeaver.weaver.addedValue;
 
-import com.cifre.sap.su.neo4jEcosystemWeaver.utils.GraphUtils;
-import com.cifre.sap.su.neo4jEcosystemWeaver.graphDatabase.neo4j.Neo4jDriverSingleton;
-import com.cifre.sap.su.neo4jEcosystemWeaver.weaver.graphController.GetNodeWithAddedValues;
-import org.neo4j.driver.Driver;
-import org.neo4j.driver.Record;
-import org.neo4j.driver.Result;
-import org.neo4j.driver.Session;
+import com.cifre.sap.su.neo4jEcosystemWeaver.graphDatabase.GraphDatabaseInterface;
+import com.cifre.sap.su.neo4jEcosystemWeaver.graphDatabase.GraphDatabaseSingleton;
+import com.cifre.sap.su.neo4jEcosystemWeaver.graphEntities.InternGraph;
+import com.cifre.sap.su.neo4jEcosystemWeaver.graphEntities.nodes.NodeObject;
 
 import java.util.HashSet;
 import java.util.List;
@@ -34,32 +31,23 @@ public class CveAggregated extends Cve {
     }
 
     private Set<Map<String, String>> fillAggregatedCve(String gav){
+        GraphDatabaseInterface gdb = GraphDatabaseSingleton.getInstance();
         // Check if value exist
-        Map<AddedValueEnum,String> alreadyCalculatedAddedValues = GetNodeWithAddedValues.getReleaseAddedValuesFromGav(gav, List.of(getAddedValueEnum()));
+        Map<String,Map<AddedValueEnum,String>> alreadyCalculatedAddedValue = gdb.getNodeAddedValues(Set.of(gav), List.of(getAddedValueEnum()), getAddedValueEnum().getTargetNodeType());
         // Value exist
-        if(alreadyCalculatedAddedValues.containsKey(getAddedValueEnum())){
-            return this.stringToValue(alreadyCalculatedAddedValues.get(getAddedValueEnum()));
+        if(alreadyCalculatedAddedValue.containsKey(gav) && alreadyCalculatedAddedValue.get(gav).containsKey(getAddedValueEnum())){
+            return this.stringToValue(alreadyCalculatedAddedValue.get(gav).get(getAddedValueEnum()));
         }
         else{
             // Add release CVEs
             Set<Map<String, String>> aggregatedCveValue = new HashSet<>(getCveFromGav(gav));
             // Query to get the dependencies of the given release without test dependencies
-            String query = "MATCH (r:Release)-[d:dependency]->(a:Artifact) " +
-                    "WHERE r.id = '" + gav + "' AND NOT (d.scope = 'test') " +
-                    "RETURN a.id AS artifactId, d.targetVersion AS targetVersion";
-            Driver driver = Neo4jDriverSingleton.getDriverInstance();
-            try (Session session = driver.session()) {
-                Result result = session.run(query);
-                while (result.hasNext()) {
-                    Record record = result.next();
-                    String newGav = record.get("artifactId").toString().replaceAll("[\"]","")
-                            +":"
-                            +record.get("targetVersion").toString().replaceAll("[\"]","");
-                    aggregatedCveValue.addAll(fillAggregatedCve(newGav));
-                }
+            InternGraph graph = gdb.executeQuery(gdb.getQueryDictionary().getReleaseDirectCompileDependencies(gav));
+            for(NodeObject dep : graph.getGraphNodes()){
+                aggregatedCveValue.addAll(fillAggregatedCve(dep.getId()));
             }
             //Add calculated value on graph and return
-            GraphUtils.putReleaseAddedValueOnGraph(gav, getAddedValueEnum(), valueToString());
+            gdb.putOneAddedValueOnGraph(gav, getAddedValueEnum(), valueToString(aggregatedCveValue));
             return aggregatedCveValue;
         }
     }

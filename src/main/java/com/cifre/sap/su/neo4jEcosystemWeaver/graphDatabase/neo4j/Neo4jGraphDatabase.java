@@ -1,6 +1,7 @@
 package com.cifre.sap.su.neo4jEcosystemWeaver.graphDatabase.neo4j;
 
 import com.cifre.sap.su.neo4jEcosystemWeaver.graphDatabase.GraphDatabaseInterface;
+import com.cifre.sap.su.neo4jEcosystemWeaver.graphDatabase.QueryDictionary;
 import com.cifre.sap.su.neo4jEcosystemWeaver.graphEntities.GraphObject;
 import com.cifre.sap.su.neo4jEcosystemWeaver.graphEntities.InternGraph;
 import com.cifre.sap.su.neo4jEcosystemWeaver.graphEntities.ValueObject;
@@ -27,9 +28,14 @@ import java.util.stream.Collectors;
 
 public class Neo4jGraphDatabase implements GraphDatabaseInterface {
     private final Driver driver;
+    private final QueryDictionary queryDictionary = new Neo4jQueryDictionary();
 
     public Neo4jGraphDatabase(String uri, String user, String password) {
         driver = GraphDatabase.driver(uri, AuthTokens.basic(user, password));
+    }
+
+    public QueryDictionary getQueryDictionary() {
+        return queryDictionary;
     }
 
     @Override
@@ -105,17 +111,13 @@ public class Neo4jGraphDatabase implements GraphDatabaseInterface {
             try (Session session = driver.session()) {
                 Transaction tx = session.beginTransaction();
                 int batch = 0;
-                for(AddedValue<?> addedValue : computedAddedValues){
+                for(AddedValue addedValue : computedAddedValues){
                     batch++;
                     Map<String, Object> parameters = new HashMap<>();
                     parameters.put("nodeId",addedValue.getNodeId());
                     parameters.put("addedValueType", addedValue.getAddedValueEnum().toString());
-                    parameters.put("value", addedValue.valueToString());
-                    if(addedValue.getAddedValueEnum().getTargetNodeType().equals(NodeType.RELEASE)){
-                        tx.run("MATCH (r:Release {id: $nodeId}) CREATE (r)-[l:addedValues]->(v:AddedValue {type: $addedValueType, value: $value})", parameters);
-                    } else if (addedValue.getAddedValueEnum().getTargetNodeType().equals(NodeType.ARTIFACT)) {
-                        tx.run("MATCH (a:Artifact {id: $nodeId}) CREATE (a)-[l:addedValues]->(v:AddedValue {type: $addedValueType, value: $value})", parameters);
-                    }
+                    parameters.put("value", addedValue.valueToString(addedValue.getValue()));
+                    tx.run("MATCH (r:"+addedValue.getAddedValueEnum().getTargetNodeType().enumToLabel()+" {id: $nodeId}) CREATE (r)-[l:addedValues]->(v:AddedValue {type: $addedValueType, value: $value})", parameters);
                     if(batch==10000){
                         tx.commit();
                         tx = session.beginTransaction();
@@ -128,6 +130,39 @@ public class Neo4jGraphDatabase implements GraphDatabaseInterface {
             }
         });
         insertionThread.start();
+    }
+
+    @Override
+    public void putOneAddedValueOnGraph(String nodeId, AddedValueEnum addedValueType, String value){
+        Map<String, Object> parameters = new HashMap<>();
+        parameters.put("nodeId", nodeId);
+        parameters.put("addedValueType", addedValueType.toString());
+        parameters.put("value", value);
+
+        String query = "MATCH (r:"+addedValueType.getTargetNodeType().enumToLabel()+" {id:$nodeId}) " +
+                "CREATE (r)-[l:addedValues]->(v:AddedValue {type: $addedValueType, value: $value})";
+        try (Session session = driver.session()) {
+            session.run(query, parameters);
+        }
+    }
+
+    @Override
+    public void removeAddedValuesOnGraph(Set<AddedValueEnum> addedValuesType){
+        StringBuilder cypherQuery = new StringBuilder();
+        cypherQuery.append("MATCH (n:AddedValue) ")
+                .append("WHERE n.type IN [");
+        int i = 0;
+        for (AddedValueEnum type : addedValuesType) {
+            cypherQuery.append("'").append(type).append("'");
+            if (++i < addedValuesType.size()) {
+                cypherQuery.append(", ");
+            }
+        }
+        cypherQuery.append("] ")
+                .append("CALL { WITH n DETACH DELETE n } IN TRANSACTIONS OF 10000 ROWS;");
+        try (Session session = driver.session()) {
+            session.run(cypherQuery.toString());
+        }
     }
 
     private static NodeObject generateNode(Node neo4jNode){

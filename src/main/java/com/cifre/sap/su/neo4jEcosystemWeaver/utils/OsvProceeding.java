@@ -1,5 +1,6 @@
 package com.cifre.sap.su.neo4jEcosystemWeaver.utils;
 
+import com.cifre.sap.su.neo4jEcosystemWeaver.graphDatabase.GraphDatabaseSingleton;
 import com.cifre.sap.su.neo4jEcosystemWeaver.weaver.addedValue.AddedValueEnum;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -39,7 +40,7 @@ public class OsvProceeding {
         createAggregateDataFile();
         try {
             OsvDataSingleton.getDataJsonObject();
-            GraphUtils.removeAddedValuesOnGraph(Set.of(AddedValueEnum.CVE, AddedValueEnum.CVE_AGGREGATED));
+            GraphDatabaseSingleton.getInstance().removeAddedValuesOnGraph(Set.of(AddedValueEnum.CVE, AddedValueEnum.CVE_AGGREGATED));
         } catch (IOException | ParseException e) {
             e.printStackTrace();
         }

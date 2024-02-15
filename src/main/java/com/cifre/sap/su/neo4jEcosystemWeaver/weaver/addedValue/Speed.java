@@ -1,13 +1,9 @@
 package com.cifre.sap.su.neo4jEcosystemWeaver.weaver.addedValue;
 
-import com.cifre.sap.su.neo4jEcosystemWeaver.utils.GraphUtils;
-import com.cifre.sap.su.neo4jEcosystemWeaver.graphDatabase.neo4j.Neo4jDriverSingleton;
-import org.neo4j.driver.Driver;
-import org.neo4j.driver.Record;
-import org.neo4j.driver.Result;
-import org.neo4j.driver.Session;
-import org.neo4j.driver.Value;
-import org.neo4j.driver.util.Pair;
+import com.cifre.sap.su.neo4jEcosystemWeaver.graphDatabase.GraphDatabaseInterface;
+import com.cifre.sap.su.neo4jEcosystemWeaver.graphDatabase.GraphDatabaseSingleton;
+import com.cifre.sap.su.neo4jEcosystemWeaver.graphEntities.InternGraph;
+import com.cifre.sap.su.neo4jEcosystemWeaver.graphEntities.ValueObject;
 
 import java.time.Duration;
 import java.time.Instant;
@@ -30,8 +26,13 @@ public class Speed implements AddedValue<Double> {
     }
 
     @Override
-    public Map<String, Object> getValue() {
+    public Map<String, Object> getValueMap() {
         return Collections.singletonMap(getAddedValueEnum().getJsonKey(), value);
+    }
+
+    @Override
+    public Double getValue(){
+        return value;
     }
 
     @Override
@@ -42,7 +43,6 @@ public class Speed implements AddedValue<Double> {
     @Override
     public void computeValue() {
         this.value = fillSpeed();
-        //GraphUtils.putArtifactAddedValueOnGraph(ga, getAddedValueEnum(), valueToString());
     }
 
     @Override
@@ -51,25 +51,16 @@ public class Speed implements AddedValue<Double> {
     }
 
     @Override
-    public String valueToString() {
+    public String valueToString(Double value) {
         return String.valueOf(value);
     }
 
     private double fillSpeed(){
-        String query = "MATCH (a:Artifact) -[e:relationship_AR]-> (r:Release) " +
-                "WHERE a.id = '"+ga+"' " +
-                "RETURN r.timestamp AS timestamp";
-        // Get all artifact Releases timestamp
-        Driver driver = Neo4jDriverSingleton.getDriverInstance();
         TreeSet<Long> releasesTimeStampSet = new TreeSet<>();
-        try (Session session = driver.session()) {
-            Result result = session.run(query);
-            while (result.hasNext()) {
-                Record record = result.next();
-                for (Pair<String, Value> pair : record.fields()) {
-                    releasesTimeStampSet.add(Long.parseLong(pair.value().toString()));
-                }
-            }
+        GraphDatabaseInterface gdb = GraphDatabaseSingleton.getInstance();
+        InternGraph graph = gdb.executeQuery(gdb.getQueryDictionary().getArtifactRhythm(ga));
+        for(ValueObject value : graph.getGraphValues()){
+            releasesTimeStampSet.add(Long.parseLong(value.getValue()));
         }
         if(releasesTimeStampSet.size() < 2){
             return 0;
@@ -84,5 +75,4 @@ public class Speed implements AddedValue<Double> {
             return (double) releasesTimeStampSet.size() / durationDays;
         }
     }
-
 }

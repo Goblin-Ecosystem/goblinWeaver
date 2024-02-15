@@ -1,6 +1,7 @@
 package com.cifre.sap.su.neo4jEcosystemWeaver.api.entities;
 
 import com.cifre.sap.su.neo4jEcosystemWeaver.weaver.addedValue.AddedValueEnum;
+import io.swagger.v3.oas.annotations.Hidden;
 
 import java.util.List;
 
@@ -42,6 +43,7 @@ public class ReleaseQuery {
         this.addedValues = addedValues;
     }
 
+    @Hidden
     public String getGa(){
         return groupId+":"+artifactId;
     }

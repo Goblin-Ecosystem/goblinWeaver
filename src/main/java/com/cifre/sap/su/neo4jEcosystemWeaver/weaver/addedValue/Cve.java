@@ -1,12 +1,10 @@
 package com.cifre.sap.su.neo4jEcosystemWeaver.weaver.addedValue;
 
-import com.cifre.sap.su.neo4jEcosystemWeaver.utils.GraphUtils;
 import com.cifre.sap.su.neo4jEcosystemWeaver.utils.OsvDataSingleton;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
-import org.neo4j.driver.util.Pair;
 
 import java.io.IOException;
 import java.util.*;
@@ -33,12 +31,16 @@ public class Cve implements AddedValue<Set<Map<String, String>>>{
 
     public void computeValue(){
         value = fillCve();
-        //GraphUtils.putReleaseAddedValueOnGraph(gav, getAddedValueEnum(), valueToString());
     }
 
     @Override
-    public Map<String, Object> getValue() {
+    public Map<String, Object> getValueMap() {
         return Collections.singletonMap(getAddedValueEnum().getJsonKey(), value);
+    }
+
+    @Override
+    public Set<Map<String, String>> getValue(){
+        return value;
     }
 
     @Override
@@ -69,7 +71,7 @@ public class Cve implements AddedValue<Set<Map<String, String>>>{
     }
 
     @Override
-    public String valueToString(){
+    public String valueToString(Set<Map<String, String>> value){
         JSONArray jsonArray = new JSONArray();
 
         for (Map<String, String> map : value) {

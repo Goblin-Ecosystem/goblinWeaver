@@ -1,7 +1,5 @@
 package com.cifre.sap.su.neo4jEcosystemWeaver.weaver.addedValue;
 
-import org.neo4j.driver.util.Pair;
-
 import java.util.Map;
 
 public interface AddedValue<T> {
@@ -9,7 +7,8 @@ public interface AddedValue<T> {
     String getNodeId();
     void setValue(String value);
     void computeValue();
-    Map<String, Object> getValue();
+    Map<String, Object> getValueMap();
     T stringToValue(String jsonString);
-    String valueToString();
+    String valueToString(T value);
+    T getValue();
 }

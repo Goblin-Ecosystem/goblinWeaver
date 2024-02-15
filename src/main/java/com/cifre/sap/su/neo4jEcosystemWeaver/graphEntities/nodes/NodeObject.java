@@ -12,7 +12,7 @@ public abstract class NodeObject implements GraphObject {
     private final String neo4jId;
     private final String id;
     private final NodeType type;
-    private Set<AddedValue> addedValues = new HashSet<>();
+    private final Set<AddedValue> addedValues = new HashSet<>();
 
     public NodeObject(String neo4jId, String id, NodeType type) {
         this.neo4jId = neo4jId;
@@ -41,7 +41,7 @@ public abstract class NodeObject implements GraphObject {
         jsonObject.put("id",id);
         jsonObject.put("nodeType",type);
         for(AddedValue addedValue : addedValues){
-            jsonObject.putAll(addedValue.getValue());
+            jsonObject.putAll(addedValue.getValueMap());
         }
         return jsonObject;
     }

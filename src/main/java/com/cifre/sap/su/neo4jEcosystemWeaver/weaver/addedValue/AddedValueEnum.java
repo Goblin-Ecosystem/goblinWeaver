@@ -28,6 +28,14 @@ public enum AddedValueEnum {
         };
     }
 
+    public boolean isAggregatedValue(){
+        return switch (this.name()) {
+            case "CVE", "FRESHNESS", "SPEED" -> false;
+            case "CVE_AGGREGATED", "FRESHNESS_AGGREGATED" -> true;
+            default -> false;
+        };
+    }
+
     public String getJsonKey(){
         return this.name().toLowerCase();
     }

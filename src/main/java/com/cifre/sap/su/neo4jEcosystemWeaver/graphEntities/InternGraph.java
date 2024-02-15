@@ -34,6 +34,10 @@ public class InternGraph {
         return graphNodes;
     }
 
+    public Set<ValueObject> getGraphValues() {
+        return graphValues;
+    }
+
     public JSONObject getJsonGraph(){
         resolveEdgesId();
         JSONObject graphJSON = new JSONObject();

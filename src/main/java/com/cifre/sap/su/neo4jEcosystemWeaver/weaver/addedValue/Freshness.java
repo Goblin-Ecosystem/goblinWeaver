@@ -1,12 +1,11 @@
 package com.cifre.sap.su.neo4jEcosystemWeaver.weaver.addedValue;
 
-import com.cifre.sap.su.neo4jEcosystemWeaver.utils.GraphUtils;
-import com.cifre.sap.su.neo4jEcosystemWeaver.graphDatabase.neo4j.Neo4jDriverSingleton;
+import com.cifre.sap.su.neo4jEcosystemWeaver.graphDatabase.GraphDatabaseInterface;
+import com.cifre.sap.su.neo4jEcosystemWeaver.graphDatabase.GraphDatabaseSingleton;
+import com.cifre.sap.su.neo4jEcosystemWeaver.graphEntities.InternGraph;
+import com.cifre.sap.su.neo4jEcosystemWeaver.graphEntities.ValueObject;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
-import org.neo4j.driver.*;
-import org.neo4j.driver.Record;
-import org.neo4j.driver.util.Pair;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -29,8 +28,13 @@ public class Freshness implements AddedValue<Map<String, String>>{
     }
 
     @Override
-    public Map<String, Object> getValue() {
+    public Map<String, Object> getValueMap() {
         return Collections.singletonMap(getAddedValueEnum().getJsonKey(), value);
+    }
+
+    @Override
+    public Map<String, String> getValue(){
+        return value;
     }
 
     @Override
@@ -40,12 +44,7 @@ public class Freshness implements AddedValue<Map<String, String>>{
 
     @Override
     public void computeValue() {
-        this.value = fillFreshness();
-        //GraphUtils.putReleaseAddedValueOnGraph(gav, getAddedValueEnum(), valueToString());
-    }
-
-    private Map<String, String> fillFreshness() {
-        return getFreshnessMapFromGav(gav);
+        this.value = getFreshnessMapFromGav(gav);
     }
 
     @Override
@@ -65,7 +64,7 @@ public class Freshness implements AddedValue<Map<String, String>>{
     }
 
     @Override
-    public String valueToString(){
+    public String valueToString(Map<String, String> value){
         JSONObject jsonObject = new JSONObject();
         jsonObject.putAll(value);
         JSONObject finalObject = new JSONObject();
@@ -75,20 +74,11 @@ public class Freshness implements AddedValue<Map<String, String>>{
 
     protected static Map<String, String> getFreshnessMapFromGav(String gav){
         Map<String, String> freshnessMap = new HashMap<>();
-        String query = "MATCH (r1:Release)<-[:relationship_AR]-(:Artifact)-[:relationship_AR]->(r2:Release) " +
-                "WHERE r1.id = '"+gav+"' AND r2.timestamp > r1.timestamp " +
-                "WITH r2, r2.timestamp - r1.timestamp AS difference " +
-                "RETURN count(r2) AS numberMissedRelease, max(difference) AS outdatedTimeInMs";
-        Driver driver = Neo4jDriverSingleton.getDriverInstance();
-        try (Session session = driver.session()) {
-            Result result = session.run(query);
-            while (result.hasNext()) {
-                Record record = result.next();
-                for (Pair<String, Value> pair : record.fields()) {
-                    String value = pair.value().toString().equals("NULL") ? "0" : pair.value().toString();
-                    freshnessMap.put(pair.key(),value);
-                }
-            }
+        GraphDatabaseInterface gdb = GraphDatabaseSingleton.getInstance();
+        InternGraph graph = gdb.executeQuery(gdb.getQueryDictionary().getReleaseFreshness(gav));
+        for(ValueObject value : graph.getGraphValues()){
+            String valueNotNull = value.getValue().equals("NULL") ? "0" : value.getValue();
+            freshnessMap.put(value.getKey(),valueNotNull);
         }
         return freshnessMap;
     }
