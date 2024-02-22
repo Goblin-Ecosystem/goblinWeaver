@@ -9,4 +9,6 @@ public interface QueryDictionary {
     String getReleaseFreshness(String releaseId);
     String getArtifactRhythm(String artifactId);
     String getReleaseDirectCompileDependencies(String artifactId);
+    String getLinkedArtifactReleasesAndEdgesQuery(String artifactId);
+    String getReleaseDirectCompileDependenciesEdgeAndArtifact(String artifactId);
 }

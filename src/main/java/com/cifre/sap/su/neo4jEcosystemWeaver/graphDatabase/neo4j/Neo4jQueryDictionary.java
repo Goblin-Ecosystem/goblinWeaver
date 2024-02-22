@@ -19,6 +19,13 @@ public class Neo4jQueryDictionary implements QueryDictionary {
     }
 
     @Override
+    public String getLinkedArtifactReleasesAndEdgesQuery(String artifactId) {
+        return "MATCH (a:Artifact)-[e:relationship_AR]->(r:Release) " +
+                "WHERE a.id = '" + artifactId + "' " +
+                "RETURN a,e,r";
+    }
+
+    @Override
     public String getSpecificRelease(String releaseId) {
         return "MATCH (r:Release) " +
                 "WHERE r.id = '" + releaseId + "' " +
@@ -64,5 +71,12 @@ public class Neo4jQueryDictionary implements QueryDictionary {
                 "WITH a,d " +
                 "MATCH (dep:Release {id: a.id+':'+d.targetVersion}) " +
                 "RETURN dep";
+    }
+
+    @Override
+    public String getReleaseDirectCompileDependenciesEdgeAndArtifact(String artifactId) {
+        return "MATCH (r:Release)-[d:dependency]->(a:Artifact) " +
+                "WHERE r.id = '"+artifactId+"' AND (d.scope = 'compile') " +
+                "RETURN a,d";
     }
 }

@@ -32,6 +32,10 @@ public class Neo4jGraphDatabase implements GraphDatabaseInterface {
 
     public Neo4jGraphDatabase(String uri, String user, String password) {
         driver = GraphDatabase.driver(uri, AuthTokens.basic(user, password));
+        //Init index for added values
+        try (Session session = driver.session()) {
+            session.run("CREATE CONSTRAINT addedValueConstraint IF NOT EXISTS FOR (n:AddedValue) REQUIRE n.id IS UNIQUE");
+        }
     }
 
     public QueryDictionary getQueryDictionary() {
@@ -78,27 +82,42 @@ public class Neo4jGraphDatabase implements GraphDatabaseInterface {
 
     @Override
     public Map<String,Map<AddedValueEnum,String>> getNodeAddedValues(Set<String> nodeIds, List<AddedValueEnum> addedValues, NodeType nodeType) {
-        String query = "MATCH (n:"+nodeType.enumToLabel()+")-[l:addedValues]->(a:AddedValue) WHERE n.id IN $nodeIds AND a.type IN $addedValues RETURN n.id, a";
-        List<String> nodeTypeAddedValues = addedValues.stream().filter(a -> a.getTargetNodeType().equals(nodeType)).map(Enum::toString).collect(Collectors.toList());
-        Map<String, Object> parameters = new HashMap<>();
-        parameters.put("nodeIds", nodeIds);
-        parameters.put("addedValues", nodeTypeAddedValues);
         Map<String,Map<AddedValueEnum,String>> IdAndAddedValuesMap = new HashMap<>();
+        //String query = "MATCH (n:"+nodeType.enumToLabel()+")-[l:addedValues]->(a:AddedValue) WHERE n.id IN $nodeIds AND a.type IN $addedValues RETURN n.id, a";
+        Set<String> addedValuesIds = nodeIds.stream()
+                .flatMap(nodeId -> addedValues.stream().map(addedValue -> nodeId + ":" + addedValue.toString()))
+                .collect(Collectors.toSet());
+        String query = "MATCH (a:AddedValue) WHERE a.id IN $addedValuesIds RETURN a";
+        int batchSize = 100000;
+        List<Set<String>> batches = new ArrayList<>();
+        int i = 0;
+        Set<String> currentBatch = new HashSet<>();
+        for (String id : addedValuesIds) {
+            currentBatch.add(id);
+            if (++i % batchSize == 0 || i == addedValuesIds.size()) {
+                batches.add(new HashSet<>(currentBatch));
+                currentBatch.clear();
+            }
+        }
+        //List<String> nodeTypeAddedValues = addedValues.stream().filter(a -> a.getTargetNodeType().equals(nodeType)).map(Enum::toString).collect(Collectors.toList());
+        Map<String, Object> parameters = new HashMap<>();
+
         try (Session session = driver.session()) {
-            Result result = session.run(query, parameters);
-            while (result.hasNext()) {
-                Record record = result.next();
-                Map<AddedValueEnum, String> innerMap = new HashMap<>();
-                String nodeId = "";
-                for (Pair<String, Value> pair : record.fields()) {
-                    if (pair.value().hasType(TypeSystem.getDefault().NODE())){
+            for (Set<String> batch : batches) {
+                parameters.put("addedValuesIds", batch);
+                Result result = session.run(query, parameters);
+                while (result.hasNext()) {
+                    Record record = result.next();
+                    Map<AddedValueEnum, String> innerMap = new HashMap<>();
+                    Pair<String, Value> pair = record.fields().get(0);
+                    if (pair.value().hasType(TypeSystem.getDefault().NODE())) {
                         innerMap.put(AddedValueEnum.valueOf(pair.value().asNode().get("type").asString()), pair.value().asNode().get("value").asString().replace("\\", ""));
-                    }
-                    else{
-                        nodeId = pair.value().asString();
+                        String nodeId = pair.value().asNode().get("id").asString();
+                        int lastIndex = nodeId.lastIndexOf(':');
+                        nodeId = nodeId.substring(0,lastIndex);
+                        IdAndAddedValuesMap.computeIfAbsent(nodeId, k -> new HashMap<>()).putAll(innerMap);
                     }
                 }
-                IdAndAddedValuesMap.computeIfAbsent(nodeId, k -> new HashMap<>()).putAll(innerMap);
             }
         }
         return IdAndAddedValuesMap;
@@ -114,12 +133,14 @@ public class Neo4jGraphDatabase implements GraphDatabaseInterface {
                 for(AddedValue addedValue : computedAddedValues){
                     batch++;
                     Map<String, Object> parameters = new HashMap<>();
-                    parameters.put("nodeId",addedValue.getNodeId());
+                    parameters.put("sourceId",addedValue.getNodeId());
+                    parameters.put("addedValueId",addedValue.getNodeId()+":"+addedValue.getAddedValueEnum().toString());
                     parameters.put("addedValueType", addedValue.getAddedValueEnum().toString());
                     parameters.put("value", addedValue.valueToString(addedValue.getValue()));
-                    tx.run("MATCH (r:"+addedValue.getAddedValueEnum().getTargetNodeType().enumToLabel()+" {id: $nodeId}) CREATE (r)-[l:addedValues]->(v:AddedValue {type: $addedValueType, value: $value})", parameters);
-                    if(batch==10000){
+                    tx.run("MATCH (r:"+addedValue.getAddedValueEnum().getTargetNodeType().enumToLabel()+" {id: $sourceId}) CREATE (r)-[l:addedValues]->(v:AddedValue {id: $addedValueId, type: $addedValueType, value: $value})", parameters);
+                    if(batch % 100000 == 0){
                         tx.commit();
+                        tx.close();
                         tx = session.beginTransaction();
                     }
                 }
@@ -136,11 +157,12 @@ public class Neo4jGraphDatabase implements GraphDatabaseInterface {
     public void putOneAddedValueOnGraph(String nodeId, AddedValueEnum addedValueType, String value){
         Map<String, Object> parameters = new HashMap<>();
         parameters.put("nodeId", nodeId);
+        parameters.put("addedValueId", nodeId+":"+addedValueType.toString());
         parameters.put("addedValueType", addedValueType.toString());
         parameters.put("value", value);
 
         String query = "MATCH (r:"+addedValueType.getTargetNodeType().enumToLabel()+" {id:$nodeId}) " +
-                "CREATE (r)-[l:addedValues]->(v:AddedValue {type: $addedValueType, value: $value})";
+                "CREATE (r)-[l:addedValues]->(v:AddedValue {id: $addedValueId, type: $addedValueType, value: $value})";
         try (Session session = driver.session()) {
             session.run(query, parameters);
         }

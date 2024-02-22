@@ -38,6 +38,10 @@ public class InternGraph {
         return graphValues;
     }
 
+    public Set<EdgeObject> getGraphEdges() {
+        return graphEdges;
+    }
+
     public JSONObject getJsonGraph(){
         resolveEdgesId();
         JSONObject graphJSON = new JSONObject();
@@ -45,6 +49,12 @@ public class InternGraph {
         addObjectsToJSONArray(graphEdges, "edges", graphJSON);
         addObjectsToJSONArray(graphValues, "values", graphJSON);
         return graphJSON;
+    }
+
+    public void mergeGraph(InternGraph graph){
+        this.graphNodes.addAll(graph.getGraphNodes());
+        this.graphEdges.addAll(graph.getGraphEdges());
+        this.graphValues.addAll(graph.getGraphValues());
     }
 
     private void addObjectsToJSONArray(Set<? extends GraphObject> objects, String key, JSONObject graphJSON) {
@@ -74,16 +84,6 @@ public class InternGraph {
             if (targetId != null) {
                 edge.setTargetId(targetId);
             }
-        }
-    }
-
-    public void printGraph(){
-        System.out.println("Nodes: ");
-        for (NodeObject node : graphNodes){
-            System.out.println("\t"+node.getId());
-        }
-        for (ValueObject value : graphValues){
-            System.out.println("\t"+value.toString());
         }
     }
 }

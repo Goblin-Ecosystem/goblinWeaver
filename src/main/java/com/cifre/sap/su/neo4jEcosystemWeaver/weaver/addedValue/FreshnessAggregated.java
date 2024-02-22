@@ -24,10 +24,15 @@ public class FreshnessAggregated extends Freshness{
 
     @Override
     public void computeValue() {
-        super.value = fillAggregatedFreshness(super.gav);
+        super.value = fillAggregatedFreshness(super.gav, new HashSet<>());
     }
 
-    private Map<String, String> fillAggregatedFreshness(String gav){
+    private Map<String, String> fillAggregatedFreshness(String gav, Set<String> visiting){
+        // For cycles
+        if(visiting.contains(gav)){
+            return new HashMap<>();
+        }
+        visiting.add(gav);
         GraphDatabaseInterface gdb = GraphDatabaseSingleton.getInstance();
         // Check if value exist
         Map<String,Map<AddedValueEnum,String>> alreadyCalculatedAddedValue = gdb.getNodeAddedValues(Set.of(gav), List.of(getAddedValueEnum()), getAddedValueEnum().getTargetNodeType());
@@ -45,10 +50,11 @@ public class FreshnessAggregated extends Freshness{
 
             InternGraph graph = gdb.executeQuery(gdb.getQueryDictionary().getReleaseDirectCompileDependencies(gav));
             for(NodeObject dep : graph.getGraphNodes()){
-                Map<String, String> freshnessToAdd = fillAggregatedFreshness(dep.getId());
+                Map<String, String> freshnessToAdd = fillAggregatedFreshness(dep.getId(), visiting);
                 totalNumberMissedRelease += Integer.parseInt(freshnessToAdd.get("numberMissedRelease"));
                 totalOutdatedTimeInMs += Long.parseLong(freshnessToAdd.get("outdatedTimeInMs"));
             }
+            visiting.remove(gav);
             Map<String, String> aggregatedFreshnessMap = new HashMap<>();
             aggregatedFreshnessMap.put("numberMissedRelease", Integer.toString(totalNumberMissedRelease));
             aggregatedFreshnessMap.put("outdatedTimeInMs", Long.toString(totalOutdatedTimeInMs));

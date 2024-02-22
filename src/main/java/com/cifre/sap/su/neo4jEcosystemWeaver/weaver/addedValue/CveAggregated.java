@@ -5,10 +5,7 @@ import com.cifre.sap.su.neo4jEcosystemWeaver.graphDatabase.GraphDatabaseSingleto
 import com.cifre.sap.su.neo4jEcosystemWeaver.graphEntities.InternGraph;
 import com.cifre.sap.su.neo4jEcosystemWeaver.graphEntities.nodes.NodeObject;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 public class CveAggregated extends Cve {
 
@@ -27,10 +24,15 @@ public class CveAggregated extends Cve {
 
     @Override
     public void computeValue() {
-        super.value = fillAggregatedCve(super.gav);
+        super.value = fillAggregatedCve(super.gav, new HashSet<>());
     }
 
-    private Set<Map<String, String>> fillAggregatedCve(String gav){
+    private Set<Map<String, String>> fillAggregatedCve(String gav, Set<String> visiting){
+        // For cycles
+        if(visiting.contains(gav)){
+            return new HashSet<>();
+        }
+        visiting.add(gav);
         GraphDatabaseInterface gdb = GraphDatabaseSingleton.getInstance();
         // Check if value exist
         Map<String,Map<AddedValueEnum,String>> alreadyCalculatedAddedValue = gdb.getNodeAddedValues(Set.of(gav), List.of(getAddedValueEnum()), getAddedValueEnum().getTargetNodeType());
@@ -44,8 +46,9 @@ public class CveAggregated extends Cve {
             // Query to get the dependencies of the given release without test dependencies
             InternGraph graph = gdb.executeQuery(gdb.getQueryDictionary().getReleaseDirectCompileDependencies(gav));
             for(NodeObject dep : graph.getGraphNodes()){
-                aggregatedCveValue.addAll(fillAggregatedCve(dep.getId()));
+                aggregatedCveValue.addAll(fillAggregatedCve(dep.getId(), visiting));
             }
+            visiting.remove(gav);
             //Add calculated value on graph and return
             gdb.putOneAddedValueOnGraph(gav, getAddedValueEnum(), valueToString(aggregatedCveValue));
             return aggregatedCveValue;
