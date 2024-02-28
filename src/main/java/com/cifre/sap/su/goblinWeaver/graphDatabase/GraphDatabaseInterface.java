@@ -12,8 +12,10 @@ import java.util.Set;
 public interface GraphDatabaseInterface {
     QueryDictionary getQueryDictionary();
     InternGraph executeQuery(String query);
+    InternGraph executeQueryWithParameters(String query, Map<String, Object> parameters);
     Map<String,Map<AddedValueEnum,String>> getNodeAddedValues(Set<String> nodeIds, List<AddedValueEnum> addedValues, NodeType nodeType);
     void addAddedValues(List<AddedValue<?>> computedAddedValues);
     void putOneAddedValueOnGraph(String nodeId, AddedValueEnum addedValueType, String value);
     void removeAddedValuesOnGraph(Set<AddedValueEnum> addedValuesType);
+    InternGraph getAllPossibilitiesGraph(Set<String> artifactIdList);
 }

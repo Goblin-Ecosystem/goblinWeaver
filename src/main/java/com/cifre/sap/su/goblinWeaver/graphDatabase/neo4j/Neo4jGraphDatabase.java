@@ -44,59 +44,69 @@ public class Neo4jGraphDatabase implements GraphDatabaseInterface {
 
     @Override
     public InternGraph executeQuery(String query) {
-        InternGraph graph = new InternGraph();
         try (Session session = driver.session()) {
-            Result result = session.run(query);
-            while (result.hasNext()) {
-                Record record = result.next();
-                for (Pair<String, Value> pair : record.fields()) {
-                    if (pair.value().hasType(TypeSystem.getDefault().NODE())){
-                        NodeObject nodeObject = generateNode(pair.value().asNode());
-                        if(nodeObject != null){
-                            graph.addNode(nodeObject);
-                        }
-                    }
-                    else if (pair.value().hasType(TypeSystem.getDefault().RELATIONSHIP())){
-                        EdgeObject edgeObject = generateRelationship(pair.value().asRelationship());
-                        if(edgeObject != null){
-                            graph.addEdge(edgeObject);
-                        }
-                    }
-                    else if (pair.value().hasType(TypeSystem.getDefault().PATH())) {
-                        for(GraphObject graphObject : generatePath(pair.value().asPath())){
-                            if (graphObject instanceof NodeObject) {
-                                graph.addNode((NodeObject) graphObject);
-                            } else {
-                                graph.addEdge((EdgeObject) graphObject);
-                            }
-                        }
-                    }
-                    else if (pair.value().hasType(TypeSystem.getDefault().LIST())){
-                        List<Object> list = pair.value().asList();
-                        for (Object item : list) {
-                            if (item instanceof Node) {
-                                Node node = (Node) item;
-                                NodeObject nodeObject = generateNode(node);
-                                if(nodeObject != null) {
-                                    graph.addNode(nodeObject);
-                                }
-                            }
-                            else if (item instanceof Relationship) {
-                                Relationship relationship = (Relationship) item;
-                                EdgeObject edgeObject = generateRelationship(relationship);
-                                if(edgeObject != null) {
-                                    graph.addEdge(edgeObject);
-                                }
-                            }
-                        }
-                    }
-                    else{
-                        graph.addValue(new ValueObject(pair.key(), pair.value().toString().replaceAll("[\"]","")));
+            return treatNeo4jResult(session.run(query));
+        }
+    }
+
+    @Override
+    public InternGraph executeQueryWithParameters(String query, Map<String, Object> parameters) {
+        try (Session session = driver.session()) {
+            return treatNeo4jResult(session.run(query, parameters));
+        }
+    }
+
+    private InternGraph treatNeo4jResult(Result result){
+        InternGraph graph = new InternGraph();
+        while (result.hasNext()) {
+            Record record = result.next();
+            for (Pair<String, Value> pair : record.fields()) {
+                if (pair.value().hasType(TypeSystem.getDefault().NODE())){
+                    NodeObject nodeObject = generateNode(pair.value().asNode());
+                    if(nodeObject != null){
+                        graph.addNode(nodeObject);
                     }
                 }
+                else if (pair.value().hasType(TypeSystem.getDefault().RELATIONSHIP())){
+                    EdgeObject edgeObject = generateRelationship(pair.value().asRelationship());
+                    if(edgeObject != null){
+                        graph.addEdge(edgeObject);
+                    }
+                }
+                else if (pair.value().hasType(TypeSystem.getDefault().PATH())) {
+                    for(GraphObject graphObject : generatePath(pair.value().asPath())){
+                        if (graphObject instanceof NodeObject) {
+                            graph.addNode((NodeObject) graphObject);
+                        } else {
+                            graph.addEdge((EdgeObject) graphObject);
+                        }
+                    }
+                }
+                else if (pair.value().hasType(TypeSystem.getDefault().LIST())){
+                    List<Object> list = pair.value().asList();
+                    for (Object item : list) {
+                        if (item instanceof Node) {
+                            Node node = (Node) item;
+                            NodeObject nodeObject = generateNode(node);
+                            if(nodeObject != null) {
+                                graph.addNode(nodeObject);
+                            }
+                        }
+                        else if (item instanceof Relationship) {
+                            Relationship relationship = (Relationship) item;
+                            EdgeObject edgeObject = generateRelationship(relationship);
+                            if(edgeObject != null) {
+                                graph.addEdge(edgeObject);
+                            }
+                        }
+                    }
+                }
+                else{
+                    graph.addValue(new ValueObject(pair.key(), pair.value().toString().replaceAll("[\"]","")));
+                }
             }
-            return graph;
         }
+        return graph;
     }
 
     @Override
@@ -204,6 +214,30 @@ public class Neo4jGraphDatabase implements GraphDatabaseInterface {
         try (Session session = driver.session()) {
             session.run(cypherQuery.toString());
         }
+    }
+
+    @Override
+    public InternGraph getAllPossibilitiesGraph(Set<String> artifactIdList){
+        InternGraph graphAllPossibilities = new InternGraph();
+        Set<String> artifactToTreat = new HashSet<>(artifactIdList);
+        Set<String> visitedArtifact = new HashSet<>();
+        Map<String, Object> parameters = new HashMap<>();
+        String query = "MATCH (a:Artifact)-[e:relationship_AR*]->(r:Release) " +
+                "WHERE a.id IN $artifactIdList " +
+                "WITH a, r, e MATCH (r)-[d:dependency]->(a2:Artifact) " +
+                "WHERE d.scope = 'compile' " +
+                "RETURN a,e,r,d, a2";
+        while (!artifactToTreat.isEmpty()){
+            parameters.put("artifactIdList",artifactToTreat);
+            InternGraph resultGraph = executeQueryWithParameters(query, parameters);
+            graphAllPossibilities.mergeGraph(resultGraph);
+            visitedArtifact.addAll(artifactToTreat);
+            Set<String> newArtifactToTreat = resultGraph.getGraphNodes().stream().filter(node -> node instanceof ArtifactNode).map(NodeObject::getId).collect(Collectors.toSet());
+            newArtifactToTreat.removeAll(visitedArtifact);
+            artifactToTreat.clear();
+            artifactToTreat.addAll(newArtifactToTreat);
+        }
+        return graphAllPossibilities;
     }
 
     private static NodeObject generateNode(Node neo4jNode){
