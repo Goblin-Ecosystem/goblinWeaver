@@ -71,6 +71,25 @@ public class Neo4jGraphDatabase implements GraphDatabaseInterface {
                             }
                         }
                     }
+                    else if (pair.value().hasType(TypeSystem.getDefault().LIST())){
+                        List<Object> list = pair.value().asList();
+                        for (Object item : list) {
+                            if (item instanceof Node) {
+                                Node node = (Node) item;
+                                NodeObject nodeObject = generateNode(node);
+                                if(nodeObject != null) {
+                                    graph.addNode(nodeObject);
+                                }
+                            }
+                            else if (item instanceof Relationship) {
+                                Relationship relationship = (Relationship) item;
+                                EdgeObject edgeObject = generateRelationship(relationship);
+                                if(edgeObject != null) {
+                                    graph.addEdge(edgeObject);
+                                }
+                            }
+                        }
+                    }
                     else{
                         graph.addValue(new ValueObject(pair.key(), pair.value().toString().replaceAll("[\"]","")));
                     }
