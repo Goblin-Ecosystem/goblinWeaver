@@ -11,4 +11,5 @@ public interface QueryDictionary {
     String getReleaseDirectCompileDependencies(String artifactId);
     String getLinkedArtifactReleasesAndEdgesQuery(String artifactId);
     String getReleaseDirectCompileDependenciesEdgeAndArtifact(String artifactId);
+    String getReleaseNumberCount();
 }

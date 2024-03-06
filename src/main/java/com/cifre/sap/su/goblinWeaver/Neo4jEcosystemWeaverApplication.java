@@ -1,6 +1,7 @@
 package com.cifre.sap.su.goblinWeaver;
 
 import com.cifre.sap.su.goblinWeaver.graphDatabase.GraphDatabaseSingleton;
+import com.cifre.sap.su.goblinWeaver.utils.GraphUpdatedChecker;
 import com.cifre.sap.su.goblinWeaver.utils.OsvProceeding;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -10,6 +11,7 @@ public class Neo4jEcosystemWeaverApplication {
 
 	public static void main(String[] args) {
 		GraphDatabaseSingleton.getInstance(); // Init database connection
+		GraphUpdatedChecker.deleteAddedValuesIfUpdated(); // Check if database was updated
 		OsvProceeding.initOsvData(args); // Download CVE dataset
 		SpringApplication.run(Neo4jEcosystemWeaverApplication.class, args); // Run API
 	}

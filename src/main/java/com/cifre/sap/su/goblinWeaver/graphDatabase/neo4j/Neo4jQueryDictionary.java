@@ -79,4 +79,10 @@ public class Neo4jQueryDictionary implements QueryDictionary {
                 "WHERE r.id = '"+artifactId+"' AND (d.scope = 'compile') " +
                 "RETURN a,d";
     }
+
+    @Override
+    public String getReleaseNumberCount(){
+        return "MATCH (r:Release) " +
+                "RETURN count(r)";
+    }
 }

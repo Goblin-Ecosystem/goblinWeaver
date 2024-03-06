@@ -17,7 +17,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
 public class OsvProceeding {
-    private static final String ROOT_PATH = "osvData";
+    private static final String ROOT_PATH = ConstantProperties.osvDataFolderPath;
     private static final String DATA_PATH = ROOT_PATH+"/maven";
     public static final String AGGREGATED_DATA_FILE = ROOT_PATH+"/aggregated_data.json";
     private static final String OSV_DATA_URL = "https://storage.googleapis.com/osv-vulnerabilities/Maven/all.zip";
