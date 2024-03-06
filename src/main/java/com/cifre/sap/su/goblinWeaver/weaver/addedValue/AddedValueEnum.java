@@ -1,7 +1,9 @@
 package com.cifre.sap.su.goblinWeaver.weaver.addedValue;
 
 import com.cifre.sap.su.goblinWeaver.graphEntities.nodes.NodeType;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 
+@JsonDeserialize(using = AddedValueEnumDeserializer.class)
 public enum AddedValueEnum {
     CVE,
     CVE_AGGREGATED,
