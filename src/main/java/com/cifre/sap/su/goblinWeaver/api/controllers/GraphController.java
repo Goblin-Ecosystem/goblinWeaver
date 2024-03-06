@@ -40,4 +40,26 @@ public class GraphController {
         Weaver.weaveGraph(resultGraph, releaseQueryList.getAddedValues());
         return resultGraph.getJsonGraph();
     }
+
+    @Operation(
+            description = "Get the project rooted direct dependencies possibilities graph",
+            summary = "Get the project rooted direct dependencies possibilities graph from releases dependencies list"
+    )
+    @PostMapping("/graph/directPossibilitiesRooted")
+    public JSONObject getDirectPossibilitiesRootedGraph(@RequestBody ReleaseQueryList releaseQueryList) {
+        InternGraph resultGraph = new InternGraph();
+        resultGraph.addNode(new ReleaseNode("ROOT", "ROOT", 0, ""));
+        for (ReleaseQueryList.Release release : releaseQueryList.getReleases()) {
+            resultGraph.addEdge(new DependencyEdge("ROOT", release.getGa(), release.getVersion(), "compile"));
+        }
+        resultGraph.mergeGraph(
+                GraphDatabaseSingleton.getInstance()
+                        .getDirectPossibilitiesGraph(
+                                releaseQueryList.getReleases().stream().map(ReleaseQueryList.Release::getGa).collect(Collectors.toSet()
+                                )
+                        )
+        );
+        Weaver.weaveGraph(resultGraph, releaseQueryList.getAddedValues());
+        return resultGraph.getJsonGraph();
+    }
 }

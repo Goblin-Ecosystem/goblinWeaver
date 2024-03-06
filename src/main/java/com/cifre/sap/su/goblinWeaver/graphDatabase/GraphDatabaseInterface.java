@@ -18,4 +18,5 @@ public interface GraphDatabaseInterface {
     void putOneAddedValueOnGraph(String nodeId, AddedValueEnum addedValueType, String value);
     void removeAddedValuesOnGraph(Set<AddedValueEnum> addedValuesType);
     InternGraph getAllPossibilitiesGraph(Set<String> artifactIdList);
+    InternGraph getDirectPossibilitiesGraph(Set<String> artifactIdList);
 }

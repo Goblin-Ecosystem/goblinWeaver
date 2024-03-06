@@ -30,7 +30,10 @@ public class FreshnessAggregated extends Freshness{
     private Map<String, String> fillAggregatedFreshness(String gav, Set<String> visiting){
         // For cycles
         if(visiting.contains(gav)){
-            return new HashMap<>();
+            Map<String, String> emptyFreshness = new HashMap<>();
+            emptyFreshness.put("numberMissedRelease", "0");
+            emptyFreshness.put("outdatedTimeInMs", "0");
+            return emptyFreshness;
         }
         visiting.add(gav);
         GraphDatabaseInterface gdb = GraphDatabaseSingleton.getInstance();

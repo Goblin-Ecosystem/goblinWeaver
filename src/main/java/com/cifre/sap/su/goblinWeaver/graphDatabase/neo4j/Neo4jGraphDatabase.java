@@ -240,6 +240,16 @@ public class Neo4jGraphDatabase implements GraphDatabaseInterface {
         return graphAllPossibilities;
     }
 
+    @Override
+    public InternGraph getDirectPossibilitiesGraph(Set<String> artifactIdList){
+        Map<String, Object> parameters = new HashMap<>();
+        String query = "MATCH (a:Artifact)-[e:relationship_AR]->(r:Release) " +
+                "WHERE a.id IN $artifactIdList " +
+                "RETURN a,e,r";
+            parameters.put("artifactIdList", artifactIdList);
+        return executeQueryWithParameters(query, parameters);
+    }
+
     private static NodeObject generateNode(Node neo4jNode){
         NodeType nodeType = NodeType.neo4jLabelToEnum(neo4jNode.labels().iterator().next());
         if(nodeType != null){
