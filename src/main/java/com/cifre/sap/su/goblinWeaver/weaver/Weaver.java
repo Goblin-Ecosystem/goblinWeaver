@@ -12,7 +12,7 @@ import java.util.stream.Collectors;
 
 public class Weaver {
 
-    public static void weaveGraph (InternGraph graph, List<AddedValueEnum> addedValues){
+    public static void weaveGraph (InternGraph graph, Set<AddedValueEnum> addedValues){
         if(addedValues.isEmpty()){
             return;
         }

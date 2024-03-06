@@ -110,7 +110,7 @@ public class Neo4jGraphDatabase implements GraphDatabaseInterface {
     }
 
     @Override
-    public Map<String,Map<AddedValueEnum,String>> getNodeAddedValues(Set<String> nodeIds, List<AddedValueEnum> addedValues, NodeType nodeType) {
+    public Map<String,Map<AddedValueEnum,String>> getNodeAddedValues(Set<String> nodeIds, Set<AddedValueEnum> addedValues, NodeType nodeType) {
         Map<String,Map<AddedValueEnum,String>> IdAndAddedValuesMap = new HashMap<>();
         //String query = "MATCH (n:"+nodeType.enumToLabel()+")-[l:addedValues]->(a:AddedValue) WHERE n.id IN $nodeIds AND a.type IN $addedValues RETURN n.id, a";
         Set<String> addedValuesIds = nodeIds.stream()

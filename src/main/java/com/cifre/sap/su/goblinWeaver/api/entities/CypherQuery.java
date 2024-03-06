@@ -2,11 +2,11 @@ package com.cifre.sap.su.goblinWeaver.api.entities;
 
 import com.cifre.sap.su.goblinWeaver.weaver.addedValue.AddedValueEnum;
 
-import java.util.List;
+import java.util.Set;
 
 public class CypherQuery {
     private String query;
-    private List<AddedValueEnum> addedValues;
+    private Set<AddedValueEnum> addedValues;
     
     public String getQuery() {
         return query;
@@ -16,11 +16,11 @@ public class CypherQuery {
         this.query = query;
     }
 
-    public List<AddedValueEnum> getAddedValues() {
+    public Set<AddedValueEnum> getAddedValues() {
         return addedValues;
     }
 
-    public void setAddedValues(List<AddedValueEnum> addedValues) {
+    public void setAddedValues(Set<AddedValueEnum> addedValues) {
         this.addedValues = addedValues;
     }
 }

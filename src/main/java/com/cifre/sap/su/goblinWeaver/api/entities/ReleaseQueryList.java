@@ -3,25 +3,25 @@ package com.cifre.sap.su.goblinWeaver.api.entities;
 import com.cifre.sap.su.goblinWeaver.weaver.addedValue.AddedValueEnum;
 import io.swagger.v3.oas.annotations.Hidden;
 
-import java.util.List;
+import java.util.Set;
 
 public class ReleaseQueryList {
-    List<Release> releases;
-    private List<AddedValueEnum> addedValues;
+    Set<Release> releases;
+    private Set<AddedValueEnum> addedValues;
 
-    public List<Release> getReleases() {
+    public Set<Release> getReleases() {
         return releases;
     }
 
-    public void setReleases(List<Release> releases) {
+    public void setReleases(Set<Release> releases) {
         this.releases = releases;
     }
 
-    public List<AddedValueEnum> getAddedValues() {
+    public Set<AddedValueEnum> getAddedValues() {
         return addedValues;
     }
 
-    public void setAddedValues(List<AddedValueEnum> addedValues) {
+    public void setAddedValues(Set<AddedValueEnum> addedValues) {
         this.addedValues = addedValues;
     }
 

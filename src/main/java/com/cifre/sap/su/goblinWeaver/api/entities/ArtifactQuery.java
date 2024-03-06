@@ -2,12 +2,12 @@ package com.cifre.sap.su.goblinWeaver.api.entities;
 
 import com.cifre.sap.su.goblinWeaver.weaver.addedValue.AddedValueEnum;
 
-import java.util.List;
+import java.util.Set;
 
 public class ArtifactQuery {
     private String groupId;
     private String artifactId;
-    private List<AddedValueEnum> addedValues;
+    private Set<AddedValueEnum> addedValues;
 
     public String getGroupId() {
         return groupId;
@@ -25,11 +25,11 @@ public class ArtifactQuery {
         this.artifactId = artifactId;
     }
 
-    public List<AddedValueEnum> getAddedValues() {
+    public Set<AddedValueEnum> getAddedValues() {
         return addedValues;
     }
 
-    public void setAddedValues(List<AddedValueEnum> addedValues) {
+    public void setAddedValues(Set<AddedValueEnum> addedValues) {
         this.addedValues = addedValues;
     }
 

@@ -3,13 +3,13 @@ package com.cifre.sap.su.goblinWeaver.api.entities;
 import com.cifre.sap.su.goblinWeaver.weaver.addedValue.AddedValueEnum;
 import io.swagger.v3.oas.annotations.Hidden;
 
-import java.util.List;
+import java.util.Set;
 
 public class ReleaseQuery {
     private String groupId;
     private String artifactId;
     private String version;
-    private List<AddedValueEnum> addedValues;
+    private Set<AddedValueEnum> addedValues;
 
     public String getGroupId() {
         return groupId;
@@ -35,11 +35,11 @@ public class ReleaseQuery {
         this.version = version;
     }
 
-    public List<AddedValueEnum> getAddedValues() {
+    public Set<AddedValueEnum> getAddedValues() {
         return addedValues;
     }
 
-    public void setAddedValues(List<AddedValueEnum> addedValues) {
+    public void setAddedValues(Set<AddedValueEnum> addedValues) {
         this.addedValues = addedValues;
     }
 
