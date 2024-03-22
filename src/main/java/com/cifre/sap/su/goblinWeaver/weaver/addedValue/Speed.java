@@ -9,36 +9,17 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.*;
 
-public class Speed implements AddedValue<Double> {
-    private final String ga;
-    private Double value;
+public class Speed extends AbstractAddedValue<Double> {
 
-    public Speed(String ga) {
-        this.ga = ga;
+    public Speed(String nodeId) {
+        super(nodeId);
     }
 
+    @Override
     public AddedValueEnum getAddedValueEnum(){
         return AddedValueEnum.SPEED;
     }
 
-    public String getNodeId(){
-        return ga;
-    }
-
-    @Override
-    public Map<String, Object> getValueMap() {
-        return Collections.singletonMap(getAddedValueEnum().getJsonKey(), value);
-    }
-
-    @Override
-    public Double getValue(){
-        return value;
-    }
-
-    @Override
-    public void setValue(String value) {
-        this.value = this.stringToValue(value);
-    }
 
     @Override
     public void computeValue() {
@@ -58,7 +39,7 @@ public class Speed implements AddedValue<Double> {
     private double fillSpeed(){
         TreeSet<Long> releasesTimeStampSet = new TreeSet<>();
         GraphDatabaseInterface gdb = GraphDatabaseSingleton.getInstance();
-        InternGraph graph = gdb.executeQuery(gdb.getQueryDictionary().getArtifactRhythm(ga));
+        InternGraph graph = gdb.executeQuery(gdb.getQueryDictionary().getArtifactRhythm(nodeId));
         for(ValueObject value : graph.getGraphValues()){
             releasesTimeStampSet.add(Long.parseLong(value.getValue()));
         }

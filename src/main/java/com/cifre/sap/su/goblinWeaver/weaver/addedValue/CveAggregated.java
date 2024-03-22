@@ -9,8 +9,8 @@ import java.util.*;
 
 public class CveAggregated extends Cve {
 
-    public CveAggregated(String gav) {
-        super(gav);
+    public CveAggregated(String nodeId) {
+        super(nodeId);
     }
 
     @Override
@@ -18,13 +18,9 @@ public class CveAggregated extends Cve {
         return AddedValueEnum.CVE_AGGREGATED;
     }
 
-    public String getNodeId(){
-        return gav;
-    }
-
     @Override
     public void computeValue() {
-        super.value = fillAggregatedCve(super.gav, new HashSet<>());
+        super.value = fillAggregatedCve(nodeId, new HashSet<>());
     }
 
     private Set<Map<String, String>> fillAggregatedCve(String gav, Set<String> visiting){

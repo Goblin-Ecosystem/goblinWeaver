@@ -13,7 +13,6 @@ import java.util.stream.Collectors;
 public class Weaver {
 
     public static void weaveGraph (InternGraph graph, Set<AddedValueEnum> addedValues){
-        System.out.println("Start weave");
         if(addedValues.isEmpty()){
             return;
         }
@@ -24,15 +23,13 @@ public class Weaver {
                 int i = 0;
                 for (List<NodeObject> nodeBatch : nodeIdToBatch(graph, nodeType)) {
                     i++;
-                    System.out.println(i+"/"+nodeBatch.size());
                     Map<String, Map<AddedValueEnum, String>> resolvedNodeAddedValues = GraphDatabaseSingleton.getInstance().getNodeAddedValues(nodeBatch.stream().map(NodeObject::getId).toList(), addedValues, nodeType);
                     computedAddedValues.addAll(fillNodeAddedValues(nodeBatch, nodeTypeAddedValues, resolvedNodeAddedValues));
-                    //GraphDatabaseSingleton.getInstance().addAddedValues(computedAddedValues);
+                    GraphDatabaseSingleton.getInstance().addAddedValues(computedAddedValues);
                     computedAddedValues.clear();
                 }
             }
         }
-        System.out.println("Weave ended");
     }
 
     private static List<List<NodeObject>> nodeIdToBatch(InternGraph graph, NodeType type) {

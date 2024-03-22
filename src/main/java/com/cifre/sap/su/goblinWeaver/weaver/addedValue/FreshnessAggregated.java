@@ -9,8 +9,8 @@ import java.util.*;
 
 public class FreshnessAggregated extends Freshness{
 
-    public FreshnessAggregated(String gav) {
-        super(gav);
+    public FreshnessAggregated(String nodeId) {
+        super(nodeId);
     }
 
     @Override
@@ -18,13 +18,9 @@ public class FreshnessAggregated extends Freshness{
         return AddedValueEnum.FRESHNESS_AGGREGATED;
     }
 
-    public String getNodeId(){
-        return gav;
-    }
-
     @Override
     public void computeValue() {
-        super.value = fillAggregatedFreshness(super.gav, new HashSet<>());
+        super.value = fillAggregatedFreshness(nodeId, new HashSet<>());
     }
 
     private Map<String, String> fillAggregatedFreshness(String gav, Set<String> visiting){

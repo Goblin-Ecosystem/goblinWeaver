@@ -11,40 +11,21 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-public class Freshness implements AddedValue<Map<String, String>>{
-    protected final String gav;
-    protected Map<String, String> value;
+public class Freshness extends AbstractAddedValue<Map<String, String>>{
 
-    public Freshness(String gav) {
-        this.gav = gav;
+
+    public Freshness(String nodeId) {
+        super(nodeId);
     }
 
+    @Override
     public AddedValueEnum getAddedValueEnum(){
         return AddedValueEnum.FRESHNESS;
     }
 
-    public String getNodeId(){
-        return gav;
-    }
-
-    @Override
-    public Map<String, Object> getValueMap() {
-        return Collections.singletonMap(getAddedValueEnum().getJsonKey(), value);
-    }
-
-    @Override
-    public Map<String, String> getValue(){
-        return value;
-    }
-
-    @Override
-    public void setValue(String value) {
-        this.value = this.stringToValue(value);
-    }
-
     @Override
     public void computeValue() {
-        this.value = getFreshnessMapFromGav(gav);
+        this.value = getFreshnessMapFromGav(nodeId);
     }
 
     @Override

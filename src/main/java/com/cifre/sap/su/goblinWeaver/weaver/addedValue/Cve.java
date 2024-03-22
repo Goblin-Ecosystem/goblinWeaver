@@ -9,38 +9,20 @@ import org.json.simple.parser.ParseException;
 import java.io.IOException;
 import java.util.*;
 
-public class Cve implements AddedValue<Set<Map<String, String>>>{
-    protected final String gav;
-    protected Set<Map<String, String>> value;
+public class Cve extends AbstractAddedValue<Set<Map<String, String>>>{
 
-    public Cve(String gav) {
-        this.gav = gav;
+    public Cve(String nodeId) {
+        super(nodeId);
     }
 
+    @Override
     public AddedValueEnum getAddedValueEnum(){
         return AddedValueEnum.CVE;
     }
 
-    public String getNodeId(){
-        return gav;
-    }
-
-    public void setValue(String value){
-        this.value = this.stringToValue(value);
-    }
-
+    @Override
     public void computeValue(){
         value = fillCve();
-    }
-
-    @Override
-    public Map<String, Object> getValueMap() {
-        return Collections.singletonMap(getAddedValueEnum().getJsonKey(), value);
-    }
-
-    @Override
-    public Set<Map<String, String>> getValue(){
-        return value;
     }
 
     @Override
@@ -87,7 +69,7 @@ public class Cve implements AddedValue<Set<Map<String, String>>>{
     }
 
     private Set<Map<String, String>> fillCve(){
-        return getCveFromGav(gav);
+        return getCveFromGav(nodeId);
     }
 
     protected static Set<Map<String, String>> getCveFromGav(String gav){

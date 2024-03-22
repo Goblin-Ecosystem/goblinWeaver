@@ -47,9 +47,9 @@ A swagger documentation of the API is available here:
 The Weaver is designed to be extensible, allowing a user to easily add information their research need.  
 Here's how to add an added value:
 1. Go to weaver/addedValue/AddedValueEnum and add the name of your new value.
-2. Create a new class that implements weaver/addedValue/AddedValue.
-3. Write your internal logic in this new class.
-4. Go to weaver/Weaver and modify the "getValuesToAdd" method to define which type of element your new value can be applied to (Release, Artifact, dependency edge or relationship_AR edges).
+2. Fill the three methods of this enumeration with your new added value
+3. Create a new class that extends weaver/addedValue/AbstractAddedValue.
+4. Write your internal logic in this new class.
 
 ## Licensing
 Copyright 2023 SAP SE or an SAP affiliate company and Neo4j Ecosystem Weaver. Please see our [LICENSE](LICENSE) for copyright and license information.
