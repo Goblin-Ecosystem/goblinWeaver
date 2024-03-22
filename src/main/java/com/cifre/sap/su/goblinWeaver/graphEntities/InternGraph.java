@@ -5,10 +5,7 @@ import com.cifre.sap.su.goblinWeaver.graphEntities.nodes.NodeObject;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 public class InternGraph {
     private final Set<NodeObject> graphNodes = new HashSet<>();
@@ -60,8 +57,11 @@ public class InternGraph {
     private void addObjectsToJSONArray(Set<? extends GraphObject> objects, String key, JSONObject graphJSON) {
         if (!objects.isEmpty()) {
             JSONArray array = new JSONArray();
-            for (GraphObject obj : objects) {
+            Iterator<? extends GraphObject> iterator = objects.iterator();
+            while (iterator.hasNext()) {
+                GraphObject obj = iterator.next();
                 array.add(obj.getJsonObject());
+                iterator.remove();
             }
             graphJSON.put(key, array);
         }

@@ -110,42 +110,25 @@ public class Neo4jGraphDatabase implements GraphDatabaseInterface {
     }
 
     @Override
-    public Map<String,Map<AddedValueEnum,String>> getNodeAddedValues(Set<String> nodeIds, Set<AddedValueEnum> addedValues, NodeType nodeType) {
+    public Map<String,Map<AddedValueEnum,String>> getNodeAddedValues(List<String> nodeIds, Set<AddedValueEnum> addedValues, NodeType nodeType) {
         Map<String,Map<AddedValueEnum,String>> IdAndAddedValuesMap = new HashMap<>();
-        //String query = "MATCH (n:"+nodeType.enumToLabel()+")-[l:addedValues]->(a:AddedValue) WHERE n.id IN $nodeIds AND a.type IN $addedValues RETURN n.id, a";
-        Set<String> addedValuesIds = nodeIds.stream()
-                .flatMap(nodeId -> addedValues.stream().map(addedValue -> nodeId + ":" + addedValue.toString()))
-                .collect(Collectors.toSet());
         String query = "MATCH (a:AddedValue) WHERE a.id IN $addedValuesIds RETURN a";
-        int batchSize = 100000;
-        List<Set<String>> batches = new ArrayList<>();
-        int i = 0;
-        Set<String> currentBatch = new HashSet<>();
-        for (String id : addedValuesIds) {
-            currentBatch.add(id);
-            if (++i % batchSize == 0 || i == addedValuesIds.size()) {
-                batches.add(new HashSet<>(currentBatch));
-                currentBatch.clear();
-            }
-        }
-        //List<String> nodeTypeAddedValues = addedValues.stream().filter(a -> a.getTargetNodeType().equals(nodeType)).map(Enum::toString).collect(Collectors.toList());
         Map<String, Object> parameters = new HashMap<>();
-
+        parameters.put("addedValuesIds", nodeIds.stream()
+                .flatMap(nodeId -> addedValues.stream().map(addedValue -> nodeId + ":" + addedValue.toString()))
+                .collect(Collectors.toList()));
         try (Session session = driver.session()) {
-            for (Set<String> batch : batches) {
-                parameters.put("addedValuesIds", batch);
-                Result result = session.run(query, parameters);
-                while (result.hasNext()) {
-                    Record record = result.next();
-                    Map<AddedValueEnum, String> innerMap = new HashMap<>();
-                    Pair<String, Value> pair = record.fields().get(0);
-                    if (pair.value().hasType(TypeSystem.getDefault().NODE())) {
-                        innerMap.put(AddedValueEnum.valueOf(pair.value().asNode().get("type").asString()), pair.value().asNode().get("value").asString().replace("\\", ""));
-                        String nodeId = pair.value().asNode().get("id").asString();
-                        int lastIndex = nodeId.lastIndexOf(':');
-                        nodeId = nodeId.substring(0,lastIndex);
-                        IdAndAddedValuesMap.computeIfAbsent(nodeId, k -> new HashMap<>()).putAll(innerMap);
-                    }
+            Result result = session.run(query, parameters);
+            while (result.hasNext()) {
+                Record record = result.next();
+                Map<AddedValueEnum, String> innerMap = new HashMap<>();
+                Pair<String, Value> pair = record.fields().get(0);
+                if (pair.value().hasType(TypeSystem.getDefault().NODE())) {
+                    innerMap.put(AddedValueEnum.valueOf(pair.value().asNode().get("type").asString()), pair.value().asNode().get("value").asString().replace("\\", ""));
+                    String nodeId = pair.value().asNode().get("id").asString();
+                    int lastIndex = nodeId.lastIndexOf(':');
+                    nodeId = nodeId.substring(0,lastIndex);
+                    IdAndAddedValuesMap.computeIfAbsent(nodeId, k -> new HashMap<>()).putAll(innerMap);
                 }
             }
         }
@@ -154,32 +137,29 @@ public class Neo4jGraphDatabase implements GraphDatabaseInterface {
 
     @Override
     public void addAddedValues(List<AddedValue<?>> computedAddedValues){
-        //Create node on thread to continue the program execution
-        Thread insertionThread = new Thread(() -> {
-            try (Session session = driver.session()) {
-                Transaction tx = session.beginTransaction();
-                int batch = 0;
-                for(AddedValue addedValue : computedAddedValues){
-                    batch++;
-                    Map<String, Object> parameters = new HashMap<>();
-                    parameters.put("sourceId",addedValue.getNodeId());
-                    parameters.put("addedValueId",addedValue.getNodeId()+":"+addedValue.getAddedValueEnum().toString());
-                    parameters.put("addedValueType", addedValue.getAddedValueEnum().toString());
-                    parameters.put("value", addedValue.valueToString(addedValue.getValue()));
-                    tx.run("MATCH (r:"+addedValue.getAddedValueEnum().getTargetNodeType().enumToLabel()+" {id: $sourceId}) CREATE (r)-[l:addedValues]->(v:AddedValue {id: $addedValueId, type: $addedValueType, value: $value})", parameters);
-                    if(batch % 100000 == 0){
-                        tx.commit();
-                        tx.close();
-                        tx = session.beginTransaction();
-                    }
+        try (Session session = driver.session()) {
+            Transaction tx = session.beginTransaction();
+            int batch = 0;
+            Map<String, Object> parameters = new HashMap<>();
+            for(AddedValue addedValue : computedAddedValues){
+                batch++;
+                parameters.clear();
+                parameters.put("sourceId",addedValue.getNodeId());
+                parameters.put("addedValueId",addedValue.getNodeId()+":"+addedValue.getAddedValueEnum().toString());
+                parameters.put("addedValueType", addedValue.getAddedValueEnum().toString());
+                parameters.put("value", addedValue.valueToString(addedValue.getValue()));
+                tx.run("MATCH (r:"+addedValue.getAddedValueEnum().getTargetNodeType().enumToLabel()+" {id: $sourceId}) CREATE (r)-[l:addedValues]->(v:AddedValue {id: $addedValueId, type: $addedValueType, value: $value})", parameters);
+                if(batch % 10000 == 0){
+                    tx.commit();
+                    tx.close();
+                    tx = session.beginTransaction();
                 }
-                tx.commit();
-                tx.close();
-            } catch (Exception e) {
-                e.printStackTrace();
             }
-        });
-        insertionThread.start();
+            tx.commit();
+            tx.close();
+        } catch (Exception e) {
+            System.out.println("Fail to add added values:\n"+e.getMessage());
+        }
     }
 
     @Override

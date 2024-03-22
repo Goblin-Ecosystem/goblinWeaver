@@ -38,7 +38,7 @@ public class FreshnessAggregated extends Freshness{
         visiting.add(gav);
         GraphDatabaseInterface gdb = GraphDatabaseSingleton.getInstance();
         // Check if value exist
-        Map<String,Map<AddedValueEnum,String>> alreadyCalculatedAddedValue = gdb.getNodeAddedValues(Set.of(gav), Set.of(getAddedValueEnum()), getAddedValueEnum().getTargetNodeType());
+        Map<String,Map<AddedValueEnum,String>> alreadyCalculatedAddedValue = gdb.getNodeAddedValues(List.of(gav), Set.of(getAddedValueEnum()), getAddedValueEnum().getTargetNodeType());
         // Value exist
         if(alreadyCalculatedAddedValue.containsKey(gav) && alreadyCalculatedAddedValue.get(gav).containsKey(getAddedValueEnum())){
             return this.stringToValue(alreadyCalculatedAddedValue.get(gav).get(getAddedValueEnum()));
