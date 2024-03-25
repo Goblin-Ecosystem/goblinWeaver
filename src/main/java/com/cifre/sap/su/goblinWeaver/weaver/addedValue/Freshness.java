@@ -53,10 +53,10 @@ public class Freshness extends AbstractAddedValue<Map<String, String>>{
         return finalObject.toJSONString().replace("\"", "\\\"");
     }
 
-    protected static Map<String, String> getFreshnessMapFromGav(String gav){
+    protected static Map<String, String> getFreshnessMapFromGav(String nodeId){
         Map<String, String> freshnessMap = new HashMap<>();
         GraphDatabaseInterface gdb = GraphDatabaseSingleton.getInstance();
-        InternGraph graph = gdb.executeQuery(gdb.getQueryDictionary().getReleaseFreshness(gav));
+        InternGraph graph = gdb.executeQuery(gdb.getQueryDictionary().getReleaseFreshness(nodeId));
         for(ValueObject value : graph.getGraphValues()){
             String valueNotNull = value.getValue().equals("NULL") ? "0" : value.getValue();
             freshnessMap.put(value.getKey(),valueNotNull);

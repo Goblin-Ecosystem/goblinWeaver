@@ -7,6 +7,7 @@ public interface QueryDictionary {
     String getReleaseDependent(String artifactId, String releaseVersion);
     String getNewerReleases(String releaseId, String artifactId);
     String getReleaseFreshness(String releaseId);
+    String getReleasePopularity1Year(String artifactGa, String releaseVersion);
     String getArtifactRhythm(String artifactId);
     String getReleaseDirectCompileDependencies(String artifactId);
     String getLinkedArtifactReleasesAndEdgesQuery(String artifactId);

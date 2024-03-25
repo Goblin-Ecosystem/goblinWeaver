@@ -22,7 +22,7 @@ public class Cve extends AbstractAddedValue<Set<Map<String, String>>>{
 
     @Override
     public void computeValue(){
-        value = fillCve();
+        value = getCveFromGav(nodeId);
     }
 
     @Override
@@ -66,10 +66,6 @@ public class Cve extends AbstractAddedValue<Set<Map<String, String>>>{
         finalObject.put(getAddedValueEnum().getJsonKey(), jsonArray);
 
         return finalObject.toJSONString().replace("\"", "\\\"");
-    }
-
-    private Set<Map<String, String>> fillCve(){
-        return getCveFromGav(nodeId);
     }
 
     protected static Set<Map<String, String>> getCveFromGav(String gav){
