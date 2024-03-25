@@ -1,13 +1,8 @@
 package com.cifre.sap.su.goblinWeaver.weaver.addedValue;
 
-import com.cifre.sap.su.goblinWeaver.graphDatabase.GraphDatabaseInterface;
-import com.cifre.sap.su.goblinWeaver.graphDatabase.GraphDatabaseSingleton;
-import com.cifre.sap.su.goblinWeaver.graphEntities.InternGraph;
-import com.cifre.sap.su.goblinWeaver.graphEntities.nodes.NodeObject;
-
 import java.util.*;
 
-public class CveAggregated extends Cve {
+public class CveAggregated extends Cve implements AggregateValue<Set<Map<String, String>>>{
 
     public CveAggregated(String nodeId) {
         super(nodeId);
@@ -20,34 +15,23 @@ public class CveAggregated extends Cve {
 
     @Override
     public void computeValue() {
-        super.value = fillAggregatedCve(nodeId, new HashSet<>());
+        super.value = computeAggregatedValue(nodeId, new HashSet<>());
     }
 
-    private Set<Map<String, String>> fillAggregatedCve(String gav, Set<String> visiting){
-        // For cycles
-        if(visiting.contains(gav)){
-            return new HashSet<>();
-        }
-        visiting.add(gav);
-        GraphDatabaseInterface gdb = GraphDatabaseSingleton.getInstance();
-        // Check if value exist
-        Map<String,Map<AddedValueEnum,String>> alreadyCalculatedAddedValue = gdb.getNodeAddedValues(List.of(gav), Set.of(getAddedValueEnum()), getAddedValueEnum().getTargetNodeType());
-        // Value exist
-        if(alreadyCalculatedAddedValue.containsKey(gav) && alreadyCalculatedAddedValue.get(gav).containsKey(getAddedValueEnum())){
-            return this.stringToValue(alreadyCalculatedAddedValue.get(gav).get(getAddedValueEnum()));
-        }
-        else{
-            // Add release CVEs
-            Set<Map<String, String>> aggregatedCveValue = new HashSet<>(getCveFromGav(gav));
-            // Query to get the dependencies of the given release without test dependencies
-            InternGraph graph = gdb.executeQuery(gdb.getQueryDictionary().getReleaseDirectCompileDependencies(gav));
-            for(NodeObject dep : graph.getGraphNodes()){
-                aggregatedCveValue.addAll(fillAggregatedCve(dep.getId(), visiting));
-            }
-            visiting.remove(gav);
-            //Add calculated value on graph and return
-            gdb.putOneAddedValueOnGraph(gav, getAddedValueEnum(), valueToString(aggregatedCveValue));
-            return aggregatedCveValue;
-        }
+    @Override
+    public Set<Map<String, String>> mergeValue(Set<Map<String, String>> computedValue, Set<Map<String, String>> computeAggregatedValue) {
+        Set<Map<String, String>> mergedSet = new HashSet<>(computedValue);
+        mergedSet.addAll(computeAggregatedValue);
+        return mergedSet;
+    }
+
+    @Override
+    public Set<Map<String, String>> computeMetric(String nodeId) {
+        return getCveFromGav(nodeId);
+    }
+
+    @Override
+    public Set<Map<String, String>> getZeroValue() {
+        return new HashSet<>();
     }
 }
