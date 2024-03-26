@@ -20,9 +20,7 @@ public class Weaver {
         for(NodeType nodeType : NodeType.values()){
             Set<AddedValueEnum> nodeTypeAddedValues = addedValues.stream().filter(a -> a.getTargetNodeType().equals(nodeType)).collect(Collectors.toSet());
             if(!nodeTypeAddedValues.isEmpty()){
-                int i = 0;
                 for (List<NodeObject> nodeBatch : nodeIdToBatch(graph, nodeType)) {
-                    i++;
                     Map<String, Map<AddedValueEnum, String>> resolvedNodeAddedValues = GraphDatabaseSingleton.getInstance().getNodeAddedValues(nodeBatch.stream().map(NodeObject::getId).toList(), addedValues, nodeType);
                     computedAddedValues.addAll(fillNodeAddedValues(nodeBatch, nodeTypeAddedValues, resolvedNodeAddedValues));
                     GraphDatabaseSingleton.getInstance().addAddedValues(computedAddedValues);
@@ -37,13 +35,12 @@ public class Weaver {
         List<List<NodeObject>> batches = new ArrayList<>();
         int i = 0;
         List<NodeObject> currentBatch = new ArrayList<>();
-        for (NodeObject node : graph.getGraphNodes()) {
-            if(node.getType().equals(type)) {
-                currentBatch.add(node);
-                if (++i % batchSize == 0 || i == graph.getGraphNodes().size()) {
-                    batches.add(new ArrayList<>(currentBatch));
-                    currentBatch.clear();
-                }
+        List<NodeObject> nodeObjectsTyped = graph.getGraphNodes().stream().filter(node -> node.getType().equals(type)).toList();
+        for (NodeObject node : nodeObjectsTyped) {
+            currentBatch.add(node);
+            if (++i % batchSize == 0 || i == nodeObjectsTyped.size()) {
+                batches.add(new ArrayList<>(currentBatch));
+                currentBatch.clear();
             }
         }
         return batches;
