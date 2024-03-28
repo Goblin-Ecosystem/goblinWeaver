@@ -58,5 +58,10 @@ public class ReleaseQueryList {
         public String getGa(){
             return groupId+":"+artifactId;
         }
+
+        @Hidden
+        public String getGav(){
+            return groupId+":"+artifactId+":"+version;
+        }
     }
 }

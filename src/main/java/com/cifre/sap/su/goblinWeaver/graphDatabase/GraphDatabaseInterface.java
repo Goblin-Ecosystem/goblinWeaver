@@ -1,5 +1,6 @@
 package com.cifre.sap.su.goblinWeaver.graphDatabase;
 
+import com.cifre.sap.su.goblinWeaver.api.entities.ReleaseQueryList;
 import com.cifre.sap.su.goblinWeaver.graphEntities.InternGraph;
 import com.cifre.sap.su.goblinWeaver.graphEntities.nodes.NodeType;
 import com.cifre.sap.su.goblinWeaver.weaver.addedValue.AddedValue;
@@ -19,4 +20,5 @@ public interface GraphDatabaseInterface {
     void removeAddedValuesOnGraph(Set<AddedValueEnum> addedValuesType);
     InternGraph getAllPossibilitiesGraph(Set<String> artifactIdList);
     InternGraph getDirectPossibilitiesGraph(Set<String> artifactIdList);
+    InternGraph getDirectNewPossibilitiesGraph(Set<ReleaseQueryList.Release> artifactIdList);
 }

@@ -1,5 +1,6 @@
 package com.cifre.sap.su.goblinWeaver.graphDatabase.neo4j;
 
+import com.cifre.sap.su.goblinWeaver.api.entities.ReleaseQueryList;
 import com.cifre.sap.su.goblinWeaver.graphDatabase.GraphDatabaseInterface;
 import com.cifre.sap.su.goblinWeaver.graphDatabase.QueryDictionary;
 import com.cifre.sap.su.goblinWeaver.graphEntities.GraphObject;
@@ -228,6 +229,23 @@ public class Neo4jGraphDatabase implements GraphDatabaseInterface {
                 "RETURN a,e,r";
             parameters.put("artifactIdList", artifactIdList);
         return executeQueryWithParameters(query, parameters);
+    }
+
+    @Override
+    public InternGraph getDirectNewPossibilitiesGraph(Set<ReleaseQueryList.Release> releaseIdList){
+        InternGraph resultGraph = new InternGraph();
+        String query = "MATCH (r:Release) WHERE r.id = $releaseId WITH r.timestamp as currentTimestamp "+
+                "MATCH (a:Artifact)-[e:relationship_AR]->(r:Release) " +
+                "WHERE a.id = $artifactId AND r.timestamp >= currentTimestamp " +
+                "RETURN a,e,r";
+        Map<String, Object> parameters = new HashMap<>();
+        for(ReleaseQueryList.Release release : releaseIdList){
+            parameters.put("releaseId", release.getGav());
+            parameters.put("artifactId", release.getGa());
+            InternGraph graph = executeQueryWithParameters(query, parameters);
+            resultGraph.mergeGraph(graph);
+        }
+        return resultGraph;
     }
 
     private static NodeObject generateNode(Node neo4jNode){

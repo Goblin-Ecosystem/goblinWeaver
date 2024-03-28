@@ -107,4 +107,43 @@ public class GraphController {
         Weaver.weaveGraph(resultGraph, releaseQueryList.getAddedValues());
         return resultGraph.getJsonGraph();
     }
+
+    @Operation(
+            description = "Get the project rooted direct dependencies possibilities graph with transitive",
+            summary = "Get the project rooted direct dependencies possibilities graph with transitive version from releases dependencies list"
+    )
+    @PostMapping("/graph/directNewPossibilitiesWithTransitiveRooted")
+    public JSONObject getDirectNewPossibilitiesWithTransitiveRootedGraph(@RequestBody ReleaseQueryList releaseQueryList) {
+        InternGraph resultGraph = new InternGraph();
+        resultGraph.addNode(new ReleaseNode("ROOT", "ROOT", 0, ""));
+        System.out.println("Nb dep: " + releaseQueryList.getReleases().size());
+        for (ReleaseQueryList.Release release : releaseQueryList.getReleases()) {
+            resultGraph.addEdge(new DependencyEdge("ROOT", release.getGa(), release.getVersion(), "compile"));
+        }
+        // Get direct all possibilities
+        InternGraph directAllPossibilities = GraphDatabaseSingleton.getInstance()
+                .getDirectNewPossibilitiesGraph(releaseQueryList.getReleases());
+        resultGraph.mergeGraph(directAllPossibilities);
+        // Get Releases dependencies
+        Map<String, Object> parameters = new HashMap<>();
+        // TODO pas de cypher ici
+        String query = "MATCH (r:Release)-[d:dependency]->(a:Artifact)-[e:relationship_AR]->(r2:Release) " +
+                "WHERE r.id IN $releaseIdList AND d.scope = 'compile' AND r2.version = d.targetVersion " +
+                "RETURN d,a,e,r2";
+        Set<String> visitedReleases = new HashSet<>();
+        Set<String> releasesToTreat = directAllPossibilities.getGraphNodes().stream().filter(n -> n.getType().equals(NodeType.RELEASE)).map(NodeObject::getId).collect(Collectors.toSet());
+        while (!releasesToTreat.isEmpty()){
+            parameters.put("releaseIdList",releasesToTreat);
+            InternGraph queryResult = GraphDatabaseSingleton.getInstance().executeQueryWithParameters(query, parameters);
+            resultGraph.mergeGraph(queryResult);
+            visitedReleases.addAll(releasesToTreat);
+            Set<String> newReleaseToTreat = resultGraph.getGraphNodes().stream().filter(node -> node instanceof ReleaseNode).map(NodeObject::getId).collect(Collectors.toSet());
+            newReleaseToTreat.removeAll(visitedReleases);
+            releasesToTreat.clear();
+            releasesToTreat.addAll(newReleaseToTreat);
+        }
+
+        Weaver.weaveGraph(resultGraph, releaseQueryList.getAddedValues());
+        return resultGraph.getJsonGraph();
+    }
 }
