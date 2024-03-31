@@ -1,7 +1,9 @@
 package com.cifre.sap.su.goblinWeaver.graphDatabase.neo4j;
 
 import com.cifre.sap.su.goblinWeaver.graphDatabase.QueryDictionary;
+import com.cifre.sap.su.goblinWeaver.utils.GraphUpdatedChecker;
 
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
@@ -64,8 +66,10 @@ public class Neo4jQueryDictionary implements QueryDictionary {
 
     @Override
     public String getReleasePopularity1Year(String artifactGa, String releaseVersion) {
-        LocalDate today = LocalDate.now();
-        LocalDate oneYearAgo = today.minus(1, ChronoUnit.YEARS);
+        LocalDate startDate = Instant.ofEpochMilli(GraphUpdatedChecker.getDatabaseLastReleaseTimestamp())
+                .atZone(ZoneId.systemDefault())
+                .toLocalDate();
+        LocalDate oneYearAgo = startDate.minus(1, ChronoUnit.YEARS);
         ZonedDateTime zonedDateTime = oneYearAgo.atStartOfDay(ZoneId.systemDefault());
         long oneYearAgoTimestampMillis = zonedDateTime.toInstant().toEpochMilli();
         return "MATCH (r:Release)-[d:dependency]->(a:Artifact) " +
@@ -97,8 +101,8 @@ public class Neo4jQueryDictionary implements QueryDictionary {
     }
 
     @Override
-    public String getReleaseNumberCount(){
+    public String getLastReleaseTimestamp(){
         return "MATCH (r:Release) " +
-                "RETURN count(r)";
+                "RETURN MAX(r.timestamp) AS maxTimestamp";
     }
 }

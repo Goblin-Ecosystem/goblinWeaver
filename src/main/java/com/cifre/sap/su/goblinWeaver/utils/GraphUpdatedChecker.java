@@ -13,7 +13,7 @@ import java.util.Set;
 
 public class GraphUpdatedChecker {
     private static final File rootFolder = new File(ConstantProperties.dataFolderPath);
-    private static final File saveFile = new File(ConstantProperties.dataFolderPath+"/databaseStatus.txt");
+    private static final File saveFile = new File(ConstantProperties.databaseStatusFile);
 
     public static void deleteAddedValuesIfUpdated(){
         System.out.println("Check if  Database was updated");
@@ -34,7 +34,7 @@ public class GraphUpdatedChecker {
     }
 
     private static void generateCountFile() {
-        InternGraph result = GraphDatabaseSingleton.getInstance().executeQuery(GraphDatabaseSingleton.getInstance().getQueryDictionary().getReleaseNumberCount());
+        InternGraph result = GraphDatabaseSingleton.getInstance().executeQuery(GraphDatabaseSingleton.getInstance().getQueryDictionary().getLastReleaseTimestamp());
         try (BufferedWriter writer = Files.newBufferedWriter(saveFile.toPath())) {
             writer.write(String.valueOf(result.getGraphValues().iterator().next().getValue()));
         } catch (IOException e) {
@@ -45,7 +45,7 @@ public class GraphUpdatedChecker {
     private static boolean checkIfUpdated(){
         try (BufferedReader reader = Files.newBufferedReader(saveFile.toPath())) {
             String fileCount = reader.readLine();
-            InternGraph result = GraphDatabaseSingleton.getInstance().executeQuery(GraphDatabaseSingleton.getInstance().getQueryDictionary().getReleaseNumberCount());
+            InternGraph result = GraphDatabaseSingleton.getInstance().executeQuery(GraphDatabaseSingleton.getInstance().getQueryDictionary().getLastReleaseTimestamp());
             String graphCount = result.getGraphValues().iterator().next().getValue();
             if(fileCount.equals(graphCount)){
                 return false;
@@ -54,5 +54,14 @@ public class GraphUpdatedChecker {
             e.printStackTrace();
         }
         return true;
+    }
+
+    public static long getDatabaseLastReleaseTimestamp(){
+        try (BufferedReader reader = Files.newBufferedReader(saveFile.toPath())) {
+            return Long.parseLong(reader.readLine());
+        } catch (IOException e) {
+            InternGraph result = GraphDatabaseSingleton.getInstance().executeQuery(GraphDatabaseSingleton.getInstance().getQueryDictionary().getLastReleaseTimestamp());
+            return Long.parseLong(result.getGraphValues().iterator().next().getValue());
+        }
     }
 }
