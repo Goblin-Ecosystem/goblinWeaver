@@ -1,22 +1,29 @@
-# Gobelin Weaver
+# Goblin Weaver
 [![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE.txt)
 
 The Weaver is a REST API that takes a Cypher query and desired additional information as input and returns the result of this query on a Neo4j ecosystem dependency graph, enriching it on the fly according to the user’s needs.
 
-This weaver comes in addition to the ecosystem dependency graph miner available here: https://github.com/Goblin-Ecosystem/goblinWeaver.  
-An example of usage of this tool is available here: https://github.com/Goblin-Ecosystem/mavenDatasetExperiences  
-A Zenodo archive that contains the associated dataset dump and the Weaver jar is available here: https://zenodo.org/records/10291589.
+This weaver use the Maven ecosystem dependency graph available here: https://zenodo.org/records/10605656
+This graph was created by the Goblin Miner, and can be updated by it: https://github.com/Goblin-Ecosystem/goblinWeaver.  
 
-If you use the dataset dump present in Zenodo, please use a Neo4j version 4.x.
+An example of usage of this tool is available here: https://github.com/Goblin-Ecosystem/mavenDatasetExperiences (on Weaver version 1.0.0).
+
+If you use the dataset dump present in Zenodo, please use a Neo4j database version 4.x.
 
 ## Added values
 - CVE: We use the osv.dev dataset to get CVEs information (https://osv.dev/).
 - CVE_AGGREGATED: Aggregate release and dependencies (with transitivity) CVE.
 - FRESHNESS: Corresponds, for a specific release, to the number of more recent releases available and to the time elapsed in milliseconds between the specific release and the most recent release.
 - FRESHNESS_AGGREGATED: Aggregate release and dependencies (with transitivity) freshness.
-- POPULARITY_1_YEAR: Corresponds, for a specific release, the number of version released within a maximum of one year after the current date using the specified release.
+- POPULARITY_1_YEAR: Corresponds, for a specific release, the number of version released within a maximum of one year after the current graph date using the specified release.
 - POPULARITY_1_YEAR_AGGREGATED: Aggregate release and dependencies (with transitivity) POPULARITY_1_YEAR.
 - SPEED: Corresponds to the average number of releases per day of an artifact. More information here: https://benevol2022.github.io/papers/DamienJaime.pdf
+
+## Memoization
+To avoid having to calculate the same metrics several times, added values are stored in the database graph once calculated.
+These new "AddedValue" type nodes are linked with "Release" or "Artifact" nodes.
+Due to their changing nature, routes are available in the API to remove them.
+However, the Weaver itself can delete them on change: when updating the CVE database, the "CVE" added values are deleted, when updating the database "FRESHNESS", "POPULARITY" and "SPEED" added values are deleted.
 
 ## Requirements
 - Java 17
