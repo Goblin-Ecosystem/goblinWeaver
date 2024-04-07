@@ -4,7 +4,7 @@
 The Weaver is a REST API that takes a Cypher query and desired additional information as input and returns the result of this query on a Neo4j ecosystem dependency graph, enriching it on the fly according to the user’s needs.
 
 This weaver use the Maven ecosystem dependency graph available here: https://zenodo.org/records/10605656
-This graph was created by the Goblin Miner, and can be updated by it: https://github.com/Goblin-Ecosystem/goblinWeaver.  
+This graph was created by the Goblin Miner, and can be updated by it: https://github.com/Goblin-Ecosystem/goblinMiner
 
 An example of usage of this tool is available here: https://github.com/Goblin-Ecosystem/mavenDatasetExperiences (on Weaver version 1.0.0).
 

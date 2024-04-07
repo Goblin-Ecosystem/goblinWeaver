@@ -116,7 +116,6 @@ public class GraphController {
     public JSONObject getDirectNewPossibilitiesWithTransitiveRootedGraph(@RequestBody ReleaseQueryList releaseQueryList) {
         InternGraph resultGraph = new InternGraph();
         resultGraph.addNode(new ReleaseNode("ROOT", "ROOT", 0, ""));
-        System.out.println("Nb dep: " + releaseQueryList.getReleases().size());
         for (ReleaseQueryList.Release release : releaseQueryList.getReleases()) {
             resultGraph.addEdge(new DependencyEdge("ROOT", release.getGa(), release.getVersion(), "compile"));
         }
