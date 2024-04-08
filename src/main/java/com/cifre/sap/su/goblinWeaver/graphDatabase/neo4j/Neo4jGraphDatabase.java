@@ -198,6 +198,32 @@ public class Neo4jGraphDatabase implements GraphDatabaseInterface {
     }
 
     @Override
+    public InternGraph getRootedGraph(Set<String> releaseIdList){
+        InternGraph rootedGraph = new InternGraph();
+        Set<String> releaseToTreat = new HashSet<>(releaseIdList);
+        Set<String> visitedRelease = new HashSet<>();
+        Map<String, Object> parameters = new HashMap<>();
+        String query = "MATCH (a:Artifact)-[re:relationship_AR]->(r:Release)-[d:dependency]->(a2:Artifact)-[re2:relationship_AR]->(target:Release) " +
+                "WHERE a.id = $artifactId AND r.id = $releaseId AND d.scope = 'compile' AND target.version=d.targetVersion " +
+                "RETURN a,re,r,d,a2,re2,target";
+        while (!releaseToTreat.isEmpty()){
+            String releaseId = releaseToTreat.iterator().next();
+            String[] splitedReleaseId = releaseId.split(":");
+            String artifactId = splitedReleaseId[0]+":"+splitedReleaseId[1];
+            parameters.put("releaseId",releaseId);
+            parameters.put("artifactId",artifactId);
+            InternGraph resultGraph = executeQueryWithParameters(query, parameters);
+            rootedGraph.mergeGraph(resultGraph);
+            visitedRelease.add(releaseId);
+            releaseToTreat.remove(releaseId);
+            Set<String> newReleaseToTreat = resultGraph.getGraphNodes().stream().filter(node -> node instanceof ReleaseNode).map(NodeObject::getId).collect(Collectors.toSet());
+            newReleaseToTreat.removeAll(visitedRelease);
+            releaseToTreat.addAll(newReleaseToTreat);
+        }
+        return rootedGraph;
+    }
+
+    @Override
     public InternGraph getAllPossibilitiesGraph(Set<String> artifactIdList){
         InternGraph graphAllPossibilities = new InternGraph();
         Set<String> artifactToTreat = new HashSet<>(artifactIdList);

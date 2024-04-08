@@ -43,7 +43,7 @@ Example:
 > java -Dneo4jUri="bolt://localhost:7687/" -Dneo4jUser="neo4j" -Dneo4jPassword="Password1" -jar .\target\goblinWeaver-1.0.0.jar
 
 
-> java -Dneo4jUri="bolt://localhost:7687/" -Dneo4jUser="neo4j" -Dneo4jPassword="Password1" -jar .\target\goblinWeaver-1.0.0.jar
+> java -Dneo4jUri="bolt://localhost:7687/" -Dneo4jUser="neo4j" -Dneo4jPassword="Password1" -jar .\target\goblinWeaver-1.0.0.jar noUpdate
 
 ## Use the API
 Pre-designed requests are available, but you can also send your own Cypher requests directly to the API.  

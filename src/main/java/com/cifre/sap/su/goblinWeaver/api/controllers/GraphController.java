@@ -27,6 +27,28 @@ import java.util.stream.Collectors;
 public class GraphController {
 
     @Operation(
+            description = "Get the project rooted graph",
+            summary = "Get the project rooted all graph from releases dependencies list"
+    )
+    @PostMapping("/graph/rootedGraph")
+    public JSONObject getRootedGraph(@RequestBody ReleaseQueryList releaseQueryList) {
+        InternGraph resultGraph = new InternGraph();
+        resultGraph.addNode(new ReleaseNode("ROOT", "ROOT", 0, ""));
+        for (ReleaseQueryList.Release release : releaseQueryList.getReleases()) {
+            resultGraph.addEdge(new DependencyEdge("ROOT", release.getGa(), release.getVersion(), "compile"));
+        }
+        resultGraph.mergeGraph(
+                GraphDatabaseSingleton.getInstance()
+                        .getRootedGraph(
+                                releaseQueryList.getReleases().stream().map(ReleaseQueryList.Release::getGav).collect(Collectors.toSet()
+                                )
+                        )
+        );
+        Weaver.weaveGraph(resultGraph, releaseQueryList.getAddedValues());
+        return resultGraph.getJsonGraph();
+    }
+
+    @Operation(
             description = "Get the project rooted all possibilities graph",
             summary = "Get the project rooted all possibilities graph from releases dependencies list"
     )
