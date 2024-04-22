@@ -7,7 +7,6 @@ import com.cifre.sap.su.goblinWeaver.graphEntities.ValueObject;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 

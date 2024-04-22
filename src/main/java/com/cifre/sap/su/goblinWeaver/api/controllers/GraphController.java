@@ -4,7 +4,6 @@ import com.cifre.sap.su.goblinWeaver.api.entities.ReleaseQueryList;
 import com.cifre.sap.su.goblinWeaver.graphDatabase.GraphDatabaseSingleton;
 import com.cifre.sap.su.goblinWeaver.graphEntities.InternGraph;
 import com.cifre.sap.su.goblinWeaver.graphEntities.edges.DependencyEdge;
-import com.cifre.sap.su.goblinWeaver.graphEntities.nodes.ArtifactNode;
 import com.cifre.sap.su.goblinWeaver.graphEntities.nodes.NodeObject;
 import com.cifre.sap.su.goblinWeaver.graphEntities.nodes.NodeType;
 import com.cifre.sap.su.goblinWeaver.graphEntities.nodes.ReleaseNode;
@@ -109,15 +108,11 @@ public class GraphController {
         resultGraph.mergeGraph(directAllPossibilities);
         // Get Releases dependencies
         Map<String, Object> parameters = new HashMap<>();
-        // TODO pas de cypher ici
-        String query = "MATCH (r:Release)-[d:dependency]->(a:Artifact)-[e:relationship_AR]->(r2:Release) " +
-                "WHERE r.id IN $releaseIdList AND d.scope = 'compile' AND r2.version = d.targetVersion " +
-                "RETURN d,a,e,r2";
         Set<String> visitedReleases = new HashSet<>();
         Set<String> releasesToTreat = directAllPossibilities.getGraphNodes().stream().filter(n -> n.getType().equals(NodeType.RELEASE)).map(NodeObject::getId).collect(Collectors.toSet());
         while (!releasesToTreat.isEmpty()){
             parameters.put("releaseIdList",releasesToTreat);
-            InternGraph queryResult = GraphDatabaseSingleton.getInstance().executeQueryWithParameters(query, parameters);
+            InternGraph queryResult = GraphDatabaseSingleton.getInstance().executeQueryWithParameters(GraphDatabaseSingleton.getInstance().getQueryDictionary().getDependencyGraphFromReleaseIdListParameter(), parameters);
             resultGraph.mergeGraph(queryResult);
             visitedReleases.addAll(releasesToTreat);
             Set<String> newReleaseToTreat = resultGraph.getGraphNodes().stream().filter(node -> node instanceof ReleaseNode).map(NodeObject::getId).collect(Collectors.toSet());
@@ -147,15 +142,11 @@ public class GraphController {
         resultGraph.mergeGraph(directAllPossibilities);
         // Get Releases dependencies
         Map<String, Object> parameters = new HashMap<>();
-        // TODO pas de cypher ici
-        String query = "MATCH (r:Release)-[d:dependency]->(a:Artifact)-[e:relationship_AR]->(r2:Release) " +
-                "WHERE r.id IN $releaseIdList AND d.scope = 'compile' AND r2.version = d.targetVersion " +
-                "RETURN d,a,e,r2";
         Set<String> visitedReleases = new HashSet<>();
         Set<String> releasesToTreat = directAllPossibilities.getGraphNodes().stream().filter(n -> n.getType().equals(NodeType.RELEASE)).map(NodeObject::getId).collect(Collectors.toSet());
         while (!releasesToTreat.isEmpty()){
             parameters.put("releaseIdList",releasesToTreat);
-            InternGraph queryResult = GraphDatabaseSingleton.getInstance().executeQueryWithParameters(query, parameters);
+            InternGraph queryResult = GraphDatabaseSingleton.getInstance().executeQueryWithParameters(GraphDatabaseSingleton.getInstance().getQueryDictionary().getDependencyGraphFromReleaseIdListParameter(), parameters);
             resultGraph.mergeGraph(queryResult);
             visitedReleases.addAll(releasesToTreat);
             Set<String> newReleaseToTreat = resultGraph.getGraphNodes().stream().filter(node -> node instanceof ReleaseNode).map(NodeObject::getId).collect(Collectors.toSet());

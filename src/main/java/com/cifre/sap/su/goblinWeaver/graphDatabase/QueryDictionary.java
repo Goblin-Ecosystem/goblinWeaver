@@ -13,4 +13,5 @@ public interface QueryDictionary {
     String getLinkedArtifactReleasesAndEdgesQuery(String artifactId);
     String getReleaseDirectCompileDependenciesEdgeAndArtifact(String artifactId);
     String getLastReleaseTimestamp();
+    String getDependencyGraphFromReleaseIdListParameter();
 }

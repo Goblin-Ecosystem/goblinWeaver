@@ -105,4 +105,11 @@ public class Neo4jQueryDictionary implements QueryDictionary {
         return "MATCH (r:Release) " +
                 "RETURN MAX(r.timestamp) AS maxTimestamp";
     }
+
+    @Override
+    public String getDependencyGraphFromReleaseIdListParameter(){
+        return "MATCH (r:Release)-[d:dependency]->(a:Artifact)-[e:relationship_AR]->(r2:Release) " +
+                "WHERE r.id IN $releaseIdList AND d.scope = 'compile' AND r2.version = d.targetVersion " +
+                "RETURN d,a,e,r2";
+    }
 }
