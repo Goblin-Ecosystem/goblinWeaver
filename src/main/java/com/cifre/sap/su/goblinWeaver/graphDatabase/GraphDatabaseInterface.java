@@ -24,5 +24,6 @@ public interface GraphDatabaseInterface {
     InternGraph getDirectNewPossibilitiesGraph(Set<ReleaseQueryList.Release> artifactIdList);
     InternGraph getReleaseWithLibAndDependencies(String artifactId);
     InternGraph getArtifactReleasesGraph(String artifactId);
+    InternGraph getArtifactSpecificReleasesGraph(String releaseId);
     InternGraph getArtifactNewReleasesGraph(String artifactId, long timestamp);
 }

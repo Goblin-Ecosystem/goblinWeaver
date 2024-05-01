@@ -46,6 +46,7 @@ public class GraphController {
         Set<String> librariesToExpends = new HashSet<>(graphTraversingQuery.getLibToExpendsGa());
         Set<String> visitedReleases = new HashSet<>();
         Set<String> visitedLibrary = new HashSet<>();
+        Set<String> releasesToAddLibrary = new HashSet<>(graphTraversingQuery.getReleaseToHaveGav().stream().map( gav -> gav.substring(0, gav.lastIndexOf(':'))).collect(Collectors.toSet()));
         boolean expendsNewLibs = searchAndRemoveAllKeyWord(librariesToExpends);
         while(!releasesToTreat.isEmpty()) {
             // Step 1: for each release, get parent lib, release, lib dependencies, lib target release:
@@ -77,6 +78,15 @@ public class GraphController {
                             : GraphDatabaseSingleton.getInstance().getArtifactReleasesGraph(libraryGa);
                 } else {
                     artifactGraph = GraphDatabaseSingleton.getInstance().getArtifactReleasesGraph(libraryGa);
+                }
+                // Make sure to add the releases to add
+                if(releasesToAddLibrary.contains(libraryGa)){
+                    for(String releaseGav : graphTraversingQuery.getReleaseToHaveGav()
+                            .stream().filter(gav -> libraryGa.equals(gav.substring(0, gav.lastIndexOf(':')))).collect(Collectors.toSet())) {
+                        InternGraph releaseToAddGraph = GraphDatabaseSingleton.getInstance().getArtifactSpecificReleasesGraph(releaseGav);
+                        resultGraph.mergeGraph(releaseToAddGraph);
+                        releasesToTreat.add(releaseGav);
+                    }
                 }
                 resultGraph.mergeGraph(artifactGraph);
                 visitedLibrary.add(libraryGa);

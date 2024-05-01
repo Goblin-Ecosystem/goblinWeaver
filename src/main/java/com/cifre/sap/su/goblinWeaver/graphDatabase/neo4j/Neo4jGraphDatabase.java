@@ -246,6 +246,16 @@ public class Neo4jGraphDatabase implements GraphDatabaseInterface {
     }
 
     @Override
+    public InternGraph getArtifactSpecificReleasesGraph(String releaseId){
+        Map<String, Object> parameters = new HashMap<>();
+        parameters.put("releaseId",releaseId);
+        String query = "MATCH (a:Artifact)-[e:relationship_AR]->(r:Release) " +
+                "WHERE r.id = $releaseId " +
+                "RETURN a,e,r";
+        return executeQueryWithParameters(query, parameters);
+    }
+
+    @Override
     public InternGraph getArtifactNewReleasesGraph(String artifactId, long timestamp){
         Map<String, Object> parameters = new HashMap<>();
         parameters.put("artifactId",artifactId);
