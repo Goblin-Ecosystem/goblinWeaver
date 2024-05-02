@@ -8,7 +8,6 @@ import java.util.Set;
 public class GraphTraversingQuery {
     private Set<String> startReleasesGav;
     private Set<String> libToExpendsGa;
-    private Set<String> releaseToHaveGav;
     private Set<FilterEnum> filters;
     private Set<AddedValueEnum> addedValues;
 
@@ -26,14 +25,6 @@ public class GraphTraversingQuery {
 
     public void setLibToExpendsGa(Set<String> libToExpendsGa) {
         this.libToExpendsGa = libToExpendsGa;
-    }
-
-    public Set<String> getReleaseToHaveGav() {
-        return releaseToHaveGav;
-    }
-
-    public void setReleaseToHaveGav(Set<String> releaseToHaveGav) {
-        this.releaseToHaveGav = releaseToHaveGav;
     }
 
     public Set<FilterEnum> getFilters() {
