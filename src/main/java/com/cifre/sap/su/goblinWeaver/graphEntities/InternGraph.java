@@ -10,7 +10,7 @@ import java.util.*;
 public class InternGraph {
     private final Set<NodeObject> graphNodes = new HashSet<>();
     private final Set<EdgeObject> graphEdges = new HashSet<>();
-    private final Set<ValueObject> graphValues = new HashSet<>();
+    private Set<ValueObject> graphValues = new HashSet<>();
 
     public InternGraph() {
     }
@@ -52,6 +52,10 @@ public class InternGraph {
         this.graphNodes.addAll(graph.getGraphNodes());
         this.graphEdges.addAll(graph.getGraphEdges());
         this.graphValues.addAll(graph.getGraphValues());
+    }
+
+    public void clearValueNodes(){
+        this.graphValues = new HashSet<>();
     }
 
     private void addObjectsToJSONArray(Set<? extends GraphObject> objects, String key, JSONObject graphJSON) {

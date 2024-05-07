@@ -48,6 +48,7 @@ public class GraphController {
             // (lib:a)-[versions]->(release:a1)-[:dependency]->(lib:b)-[versions]->(release:b1)
             for(String releaseGav : new HashSet<>(releasesToTreat)) {
                 InternGraph releaseGraph = GraphDatabaseSingleton.getInstance().getReleaseWithLibAndDependencies(releaseGav);
+                releaseGraph.clearValueNodes();
                 resultGraph.mergeGraph(releaseGraph);
                 visitedReleases.add(releaseGav);
                 releasesToTreat.addAll(releaseGraph.getGraphNodes().stream().filter(ReleaseNode.class::isInstance).map(NodeObject::getId).collect(Collectors.toSet()));
@@ -80,9 +81,6 @@ public class GraphController {
             }
             releasesToTreat.removeAll(visitedReleases);
         }
-
-
-
         Weaver.weaveGraph(resultGraph, graphTraversingQuery.getAddedValues());
         return resultGraph.getJsonGraph();
     }
