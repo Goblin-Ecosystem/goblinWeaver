@@ -229,9 +229,11 @@ public class Neo4jGraphDatabase implements GraphDatabaseInterface {
         String[] splitedGav = releaseId.split(":");
         parameters.put("releaseId",releaseId);
         parameters.put("artifactId",splitedGav[0]+":"+splitedGav[1]);
-        String query = "MATCH (a:Artifact)-[re:relationship_AR]->(r:Release)-[d:dependency]->(a2:Artifact)-[re2:relationship_AR]->(target:Release) " +
-                "WHERE a.id = $artifactId AND r.id = $releaseId AND d.scope = 'compile' AND target.version=d.targetVersion " +
-                "RETURN a,re,r,d,a2,re2,target";
+        String query = "MATCH (a:Artifact)-[re:relationship_AR]->(r:Release) " +
+                "WHERE a.id = $artifactId AND r.id = $releaseId " +
+                "OPTIONAL MATCH (r)-[d:dependency]->(a2:Artifact)-[re2:relationship_AR]->(target:Release) " +
+                "WHERE d.scope = 'compile' AND target.version = d.targetVersion " +
+                "RETURN a, re, r, d, a2, re2, target";
         return executeQueryWithParameters(query, parameters);
     }
 
