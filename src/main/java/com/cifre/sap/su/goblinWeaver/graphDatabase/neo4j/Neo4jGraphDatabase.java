@@ -224,6 +224,51 @@ public class Neo4jGraphDatabase implements GraphDatabaseInterface {
     }
 
     @Override
+    public InternGraph getReleaseWithLibAndDependencies(String releaseId){
+        Map<String, Object> parameters = new HashMap<>();
+        String[] splitedGav = releaseId.split(":");
+        parameters.put("releaseId",releaseId);
+        parameters.put("artifactId",splitedGav[0]+":"+splitedGav[1]);
+        String query = "MATCH (a:Artifact)-[re:relationship_AR]->(r:Release) " +
+                "WHERE a.id = $artifactId AND r.id = $releaseId " +
+                "OPTIONAL MATCH (r)-[d:dependency]->(a2:Artifact)-[re2:relationship_AR]->(target:Release) " +
+                "WHERE d.scope = 'compile' AND target.version = d.targetVersion " +
+                "RETURN a, re, r, d, a2, re2, target";
+        return executeQueryWithParameters(query, parameters);
+    }
+
+    @Override
+    public InternGraph getArtifactReleasesGraph(String artifactId){
+        Map<String, Object> parameters = new HashMap<>();
+        parameters.put("artifactId",artifactId);
+        String query = "MATCH (a:Artifact)-[e:relationship_AR]->(r:Release) " +
+                "WHERE a.id = $artifactId " +
+                "RETURN a,e,r";
+        return executeQueryWithParameters(query, parameters);
+    }
+
+    @Override
+    public InternGraph getArtifactSpecificReleasesGraph(String releaseId){
+        Map<String, Object> parameters = new HashMap<>();
+        parameters.put("releaseId",releaseId);
+        String query = "MATCH (a:Artifact)-[e:relationship_AR]->(r:Release) " +
+                "WHERE r.id = $releaseId " +
+                "RETURN a,e,r";
+        return executeQueryWithParameters(query, parameters);
+    }
+
+    @Override
+    public InternGraph getArtifactNewReleasesGraph(String artifactId, long timestamp){
+        Map<String, Object> parameters = new HashMap<>();
+        parameters.put("artifactId",artifactId);
+        parameters.put("timestamp",timestamp);
+        String query = "MATCH (a:Artifact)-[e:relationship_AR]->(r:Release) " +
+                "WHERE a.id = $artifactId AND r.timestamp >= $timestamp " +
+                "RETURN a,e,r";
+        return executeQueryWithParameters(query, parameters);
+    }
+
+    @Override
     public InternGraph getAllPossibilitiesGraph(Set<String> artifactIdList){
         InternGraph graphAllPossibilities = new InternGraph();
         Set<String> artifactToTreat = new HashSet<>(artifactIdList);

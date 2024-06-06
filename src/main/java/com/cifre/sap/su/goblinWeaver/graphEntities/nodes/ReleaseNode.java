@@ -12,6 +12,14 @@ public class ReleaseNode extends NodeObject {
         this.version = version;
     }
 
+    public String getGa() {
+        return getId().equals("ROOT") ? "ROOT" : getId().substring(0, getId().lastIndexOf(':'));
+    }
+
+    public long getTimestamp() {
+        return timestamp;
+    }
+
     @Override
     public JSONObject getJsonObject() {
         JSONObject jsonObject = super.getJsonObject();

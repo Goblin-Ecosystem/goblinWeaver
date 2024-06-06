@@ -41,10 +41,10 @@ The program will first download the osv.dev dataset and create a folder called "
 If you already have downloaded this dataset and you don't want to update it, you can add the "noUpdate" argument on the java -jar command.
 
 Example:
-> java -Dneo4jUri="bolt://localhost:7687/" -Dneo4jUser="neo4j" -Dneo4jPassword="Password1" -jar .\target\goblinWeaver-2.0.0.jar
+> java -Dneo4jUri="bolt://localhost:7687/" -Dneo4jUser="neo4j" -Dneo4jPassword="Password1" -jar goblinWeaver-2.0.0.jar
 
 
-> java -Dneo4jUri="bolt://localhost:7687/" -Dneo4jUser="neo4j" -Dneo4jPassword="Password1" -jar .\target\goblinWeaver-2.0.0.jar noUpdate
+> java -Dneo4jUri="bolt://localhost:7687/" -Dneo4jUser="neo4j" -Dneo4jPassword="Password1" -jar goblinWeaver-2.0.0.jar noUpdate
 
 ## Use the API
 Pre-designed requests are available, but you can also send your own Cypher requests directly to the API.  
